@@ -329,12 +329,11 @@ func (scope *Scope) QuotedTableName() (name string) {
 
 // CombinedConditionSql return combined condition sql
 func (scope *Scope) CombinedConditionSql() string {
-	joinSQL := scope.joinsSQL()
 	whereSQL := scope.whereSQL()
 	if scope.Search.raw {
 		whereSQL = strings.TrimSuffix(strings.TrimPrefix(whereSQL, "WHERE ("), ")")
 	}
-	return joinSQL + whereSQL + scope.groupSQL() +
+	return whereSQL + scope.groupSQL() +
 		scope.havingSQL() + scope.orderSQL() + scope.limitAndOffsetSQL()
 }
 
@@ -377,7 +376,7 @@ func (scope *Scope) InstanceID() string {
 	return scope.instanceID
 }
 
-// InstanceSet set instance setting for current operation, but not for operations in callbacks, like saving associations callback
+// InstanceSet set instance setting for current operation
 func (scope *Scope) InstanceSet(name string, value interface{}) *Scope {
 	return scope.Set(name+scope.InstanceID(), value)
 }
@@ -869,7 +868,6 @@ func (scope *Scope) row() *sql.Row {
 
 	result := &RowQueryResult{}
 	scope.InstanceSet("row_query_result", result)
-	scope.callCallbacks(scope.db.parent.callbacks.rowQueries)
 
 	return result.Row
 }
@@ -879,7 +877,6 @@ func (scope *Scope) rows() (*sql.Rows, error) {
 
 	result := &RowsQueryResult{}
 	scope.InstanceSet("row_query_result", result)
-	scope.callCallbacks(scope.db.parent.callbacks.rowQueries)
 
 	return result.Rows, result.Error
 }
@@ -969,6 +966,64 @@ func (scope *Scope) getTableOptions() string {
 		return ""
 	}
 	return tableOptions.(string)
+}
+
+func (scope *Scope) createTable() *Scope {
+	var tags []string
+	var primaryKeys []string
+	var primaryKeyInColumnType = false
+	for _, field := range scope.GetModelStruct().StructFields {
+		if field.IsNormal {
+			sqlTag := scope.Dialect().DataTypeOf(field)
+
+			// Check if the primary key constraint was specified as
+			// part of the column type. If so, we can only support
+			// one column as the primary key.
+			if strings.Contains(strings.ToLower(sqlTag), "primary key") {
+				primaryKeyInColumnType = true
+			}
+
+			tags = append(tags, scope.Quote(field.DBName)+" "+sqlTag)
+		}
+
+		if field.IsPrimaryKey {
+			primaryKeys = append(primaryKeys, scope.Quote(field.DBName))
+		}
+		scope.createJoinTable(field)
+	}
+
+	var primaryKeyStr string
+	if len(primaryKeys) > 0 && !primaryKeyInColumnType {
+		primaryKeyStr = fmt.Sprintf(", PRIMARY KEY (%v)", strings.Join(primaryKeys, ","))
+	}
+
+	scope.Raw(fmt.Sprintf("CREATE TABLE %v (%v %v) %s", scope.QuotedTableName(), strings.Join(tags, ","), primaryKeyStr, scope.getTableOptions())).Exec()
+
+	scope.autoIndex()
+	return scope
+}
+
+func (scope *Scope) dropTable() *Scope {
+	scope.Raw(fmt.Sprintf("DROP TABLE %v", scope.QuotedTableName())).Exec()
+	return scope
+}
+
+func (scope *Scope) addIndex(unique bool, indexName string, column ...string) {
+	if scope.Dialect().HasIndex(scope.TableName(), indexName) {
+		return
+	}
+
+	var columns []string
+	for _, name := range column {
+		columns = append(columns, scope.quoteIfPossible(name))
+	}
+
+	sqlCreate := "CREATE INDEX"
+	if unique {
+		sqlCreate = "CREATE UNIQUE INDEX"
+	}
+
+	scope.Raw(fmt.Sprintf("%s %v ON %v(%v) %v", sqlCreate, indexName, scope.QuotedTableName(), strings.Join(columns, ", "), scope.whereSQL())).Exec()
 }
 
 func (scope *Scope) autoIndex() *Scope {

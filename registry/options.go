@@ -4,7 +4,7 @@ import (
 	"crypto/tls"
 	"time"
 
-	"golang.org/x/net/context"
+	"github.com/golang/net/context"
 )
 
 type Options struct {

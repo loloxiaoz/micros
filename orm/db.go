@@ -3,8 +3,7 @@ package orm
 import (
 	"database/sql"
 	"errors"
-	"fmt"
-	"reflect"
+	"micros/logger"
 	"strings"
 	"time"
 )
@@ -19,19 +18,20 @@ type DB struct {
 	db                SQLCommon
 	blockGlobalUpdate bool
 	logMode           int
-	logger            logger
+	logger            logger.Logger
 	search            *search
 	values            map[string]interface{}
 
 	// global db
-	parent *DB
+	parent  *DB
+	dialect Dialect
 }
 
 type closer interface {
 	Close() error
 }
 
-func Open(args ...interface{}) (db *DB, err error) {
+func Open(dialect string, args ...interface{}) (db *DB, err error) {
 	if len(args) == 0 {
 		err = errors.New("invalid database source")
 		return nil, err
@@ -40,7 +40,7 @@ func Open(args ...interface{}) (db *DB, err error) {
 
 	switch value := args[0].(type) {
 	case string:
-		var driver = "mysql"
+		var driver = dialect
 		var source = value
 		dbSQL, err = sql.Open(driver, source)
 	case SQLCommon:
@@ -48,10 +48,10 @@ func Open(args ...interface{}) (db *DB, err error) {
 	}
 
 	db = &DB{
-		db:        dbSQL,
-		logger:    defaultLogger,
-		values:    map[string]interface{}{},
-		callbacks: DefaultCallback,
+		db:      dbSQL,
+		logger:  logger.NewLogger(),
+		values:  map[string]interface{}{},
+		dialect: newDialect(dialect, dbSQL),
 	}
 	db.parent = db
 	if err != nil {
@@ -95,7 +95,7 @@ func (s *DB) CommonDB() SQLCommon {
 }
 
 // SetLogger replace default logger
-func (s *DB) SetLogger(log logger) {
+func (s *DB) SetLogger(log logger.Logger) {
 	s.logger = log
 }
 
@@ -175,11 +175,6 @@ func (s *DB) Select(query interface{}, args ...interface{}) *DB {
 	return s.clone().search.Select(query, args...).db
 }
 
-// Omit specify fields that you want to ignore when saving to database for creating, updating
-func (s *DB) Omit(columns ...string) *DB {
-	return s.clone().search.Omit(columns...).db
-}
-
 // Group specify the group method on the find
 func (s *DB) Group(query string) *DB {
 	return s.clone().search.Group(query).db
@@ -230,7 +225,7 @@ func (s *DB) First(out interface{}, where ...interface{}) *DB {
 	newScope := s.clone().NewScope(out)
 	newScope.Search.Limit(1)
 	return newScope.Set("gorm:order_by_primary_key", "ASC").
-		inlineCondition(where...).callCallbacks(s.parent.callbacks.queries).db
+		inlineCondition(where...).db
 }
 
 // Last find last record that match given conditions, order by primary key
@@ -238,17 +233,17 @@ func (s *DB) Last(out interface{}, where ...interface{}) *DB {
 	newScope := s.clone().NewScope(out)
 	newScope.Search.Limit(1)
 	return newScope.Set("gorm:order_by_primary_key", "DESC").
-		inlineCondition(where...).callCallbacks(s.parent.callbacks.queries).db
+		inlineCondition(where...).db
 }
 
 // Find find records that match given conditions
 func (s *DB) Find(out interface{}, where ...interface{}) *DB {
-	return s.clone().NewScope(out).inlineCondition(where...).callCallbacks(s.parent.callbacks.queries).db
+	return s.clone().NewScope(out).inlineCondition(where...).db
 }
 
 // Scan scan value to a struct
 func (s *DB) Scan(dest interface{}) *DB {
-	return s.clone().NewScope(s.Value).Set("gorm:query_destination", dest).callCallbacks(s.parent.callbacks.queries).db
+	return s.clone().NewScope(s.Value).Set("gorm:query_destination", dest).db
 }
 
 // Row return `*sql.Row` with given conditions
@@ -311,62 +306,60 @@ func (s *DB) FirstOrCreate(out interface{}, where ...interface{}) *DB {
 		if !result.RecordNotFound() {
 			return result
 		}
-		return c.NewScope(out).inlineCondition(where...).initialize().callCallbacks(c.parent.callbacks.creates).db
+		return c.NewScope(out).inlineCondition(where...).initialize().db
 	} else if len(c.search.assignAttrs) > 0 {
-		return c.NewScope(out).InstanceSet("gorm:update_interface", c.search.assignAttrs).callCallbacks(c.parent.callbacks.updates).db
+		return c.NewScope(out).InstanceSet("gorm:update_interface", c.search.assignAttrs).db
 	}
 	return c
 }
 
-// Update update attributes with callbacks, refer: https://jinzhu.github.io/gorm/crud.html#update
+// Update update attributes
 func (s *DB) Update(attrs ...interface{}) *DB {
 	return s.Updates(toSearchableMap(attrs...), true)
 }
 
-// Updates update attributes with callbacks, refer: https://jinzhu.github.io/gorm/crud.html#update
+// Updates update attributes
 func (s *DB) Updates(values interface{}, ignoreProtectedAttrs ...bool) *DB {
 	return s.clone().NewScope(s.Value).
 		Set("gorm:ignore_protected_attrs", len(ignoreProtectedAttrs) > 0).
-		InstanceSet("gorm:update_interface", values).
-		callCallbacks(s.parent.callbacks.updates).db
+		InstanceSet("gorm:update_interface", values).db
 }
 
-// UpdateColumn update attributes without callbacks, refer: https://jinzhu.github.io/gorm/crud.html#update
+// UpdateColumn update attributes
 func (s *DB) UpdateColumn(attrs ...interface{}) *DB {
 	return s.UpdateColumns(toSearchableMap(attrs...))
 }
 
-// UpdateColumns update attributes without callbacks, refer: https://jinzhu.github.io/gorm/crud.html#update
+// UpdateColumns update attributes
 func (s *DB) UpdateColumns(values interface{}) *DB {
 	return s.clone().NewScope(s.Value).
 		Set("gorm:update_column", true).
 		Set("gorm:save_associations", false).
-		InstanceSet("gorm:update_interface", values).
-		callCallbacks(s.parent.callbacks.updates).db
+		InstanceSet("gorm:update_interface", values).db
 }
 
 // Save update value in database, if the value doesn't have primary key, will insert it
 func (s *DB) Save(value interface{}) *DB {
 	scope := s.clone().NewScope(value)
 	if !scope.PrimaryKeyZero() {
-		newDB := scope.callCallbacks(s.parent.callbacks.updates).db
+		newDB := scope.db
 		if newDB.Error == nil && newDB.RowsAffected == 0 {
 			return s.New().FirstOrCreate(value)
 		}
 		return newDB
 	}
-	return scope.callCallbacks(s.parent.callbacks.creates).db
+	return scope.db
 }
 
 // Create insert the value into database
 func (s *DB) Create(value interface{}) *DB {
 	scope := s.clone().NewScope(value)
-	return scope.callCallbacks(s.parent.callbacks.creates).db
+	return scope.db
 }
 
 // Delete delete value match given conditions, if the value has primary key, then will including the primary key as condition
 func (s *DB) Delete(value interface{}, where ...interface{}) *DB {
-	return s.clone().NewScope(value).inlineCondition(where...).callCallbacks(s.parent.callbacks.deletes).db
+	return s.clone().NewScope(value).inlineCondition(where...).db
 }
 
 // Raw use raw sql as conditions, won't run it unless invoked by other methods
@@ -503,7 +496,7 @@ func (s *DB) AddIndex(indexName string, columns ...string) *DB {
 	return scope.db
 }
 
-// Set set setting by name, which could be used in callbacks, will clone a new db, and update its setting
+// Set set setting by name, will clone a new db, and update its setting
 func (s *DB) Set(name string, value interface{}) *DB {
 	return s.clone().InstantSet(name, value)
 }

@@ -2,14 +2,11 @@ package orm
 
 import (
 	"database/sql"
-	"errors"
 	"go/ast"
 	"reflect"
 	"strings"
 	"sync"
 	"time"
-
-	"github.com/jinzhu/inflection"
 )
 
 // DefaultTableNameHandler default table name handler
