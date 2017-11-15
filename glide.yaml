@@ -1,0 +1,32 @@
+package: .
+import:
+- package: github.com/fatih/color
+  version: ^1.5.0
+- package: github.com/gin-gonic/gin
+  version: ^1.2.0
+- package: github.com/hashicorp/consul
+  version: ^1.0.1-rc1
+  subpackages:
+  - api
+  - watch
+- package: github.com/micro/go-log
+- package: github.com/micro/go-micro
+  version: ^0.2.0
+  subpackages:
+  - registry
+- package: github.com/micro/go-os
+  subpackages:
+  - metrics
+- package: github.com/mitchellh/hashstructure
+- package: github.com/prometheus/client_golang
+  version: ^0.9.0-pre1
+  subpackages:
+  - prometheus
+  - prometheus/push
+- package: github.com/golang/net/context
+testImport:
+- package: github.com/jinzhu/gorm
+  version: ^1.0.0
+ignore:
+- golang.org
+- micros
