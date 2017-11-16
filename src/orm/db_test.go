@@ -2,8 +2,8 @@ package orm
 
 import (
 	"database/sql"
-	"database/sql/driver"
 	"fmt"
+	"github.com/jinzhu/now"
 	"os"
 	"reflect"
 	"strconv"
@@ -30,6 +30,9 @@ func OpenTestConnection() (db *DB, err error) {
 	dbhost := os.Getenv("micros_DBADDRESS")
 	dbhost = fmt.Sprintf("tcp(%v)", dbhost)
 	db, err = Open("mysql", fmt.Sprintf("micros:micros@%v/micros?charset=utf8&parseTime=True", dbhost))
+	if err != nil {
+		panic("can't not open connection," + err.Error())
+	}
 
 	// db.SetLogger(Logger{log.New(os.Stdout, "\r\n", 0)})
 	// db.SetLogger(log.New(os.Stdout, "\r\n", 0))
@@ -185,7 +188,6 @@ func TestTableName(t *testing.T) {
 		t.Errorf("&[]Order's table name should be orders")
 	}
 
-	db.SingularTable(true)
 	if db.NewScope(Order{}).TableName() != "order" {
 		t.Errorf("Order's singular table name should be order")
 	}
@@ -217,12 +219,10 @@ func TestTableName(t *testing.T) {
 	if db.NewScope([]Cart{}).TableName() != "shopping_cart" {
 		t.Errorf("[]Cart's singular table name should be shopping_cart")
 	}
-	db.SingularTable(false)
 }
 
 func TestNullValues(t *testing.T) {
 	db.DropTable(&NullValue{})
-	db.AutoMigrate(&NullValue{})
 
 	if err := db.Save(&NullValue{
 		Name:    sql.NullString{String: "hello", Valid: true},
@@ -466,7 +466,7 @@ func TestRaw(t *testing.T) {
 	}
 
 	db.Exec("update users set name=? where name in (?)", "jinzhu", []string{user1.Name, user2.Name, user3.Name})
-	if db.Where("name in (?)", []string{user1.Name, user2.Name, user3.Name}).First(&User{}).Error != micros.ErrRecordNotFound {
+	if db.Where("name in (?)", []string{user1.Name, user2.Name, user3.Name}).First(&User{}).Error != ErrRecordNotFound {
 		t.Error("Raw sql to update records")
 	}
 }
@@ -482,64 +482,6 @@ func TestGroup(t *testing.T) {
 		}
 	} else {
 		t.Errorf("Should not raise any error")
-	}
-}
-
-func TestJoins(t *testing.T) {
-	var user = User{
-		Name:       "joins",
-		CreditCard: CreditCard{Number: "411111111111"},
-		Emails:     []Email{{Email: "join1@example.com"}, {Email: "join2@example.com"}},
-	}
-	db.Save(&user)
-
-	var users1 []User
-	db.Joins("left join emails on emails.user_id = users.id").Where("name = ?", "joins").Find(&users1)
-	if len(users1) != 2 {
-		t.Errorf("should find two users using left join")
-	}
-
-	var users2 []User
-	db.Joins("left join emails on emails.user_id = users.id AND emails.email = ?", "join1@example.com").Where("name = ?", "joins").First(&users2)
-	if len(users2) != 1 {
-		t.Errorf("should find one users using left join with conditions")
-	}
-
-	var users3 []User
-	db.Joins("join emails on emails.user_id = users.id AND emails.email = ?", "join1@example.com").Joins("join credit_cards on credit_cards.user_id = users.id AND credit_cards.number = ?", "411111111111").Where("name = ?", "joins").First(&users3)
-	if len(users3) != 1 {
-		t.Errorf("should find one users using multiple left join conditions")
-	}
-
-	var users4 []User
-	db.Joins("join emails on emails.user_id = users.id AND emails.email = ?", "join1@example.com").Joins("join credit_cards on credit_cards.user_id = users.id AND credit_cards.number = ?", "422222222222").Where("name = ?", "joins").First(&users4)
-	if len(users4) != 0 {
-		t.Errorf("should find no user when searching with unexisting credit card")
-	}
-
-	var users5 []User
-	db5 := db.Joins("join emails on emails.user_id = users.id AND emails.email = ?", "join1@example.com").Joins("join credit_cards on credit_cards.user_id = users.id AND credit_cards.number = ?", "411111111111").Where(User{Id: 1}).Where(Email{Id: 1}).Not(Email{Id: 10}).First(&users5)
-	if db5.Error != nil {
-		t.Errorf("Should not raise error for join where identical fields in different tables. Error: %s", db5.Error.Error())
-	}
-}
-
-func TestJoinsWithSelect(t *testing.T) {
-	type result struct {
-		Name  string
-		Email string
-	}
-
-	user := User{
-		Name:   "joins_with_select",
-		Emails: []Email{{Email: "join1@example.com"}, {Email: "join2@example.com"}},
-	}
-	db.Save(&user)
-
-	var results []result
-	db.Table("users").Select("name, emails.email").Joins("left join emails on emails.user_id = users.id").Where("name = ?", "joins_with_select").Scan(&results)
-	if len(results) != 2 || results[0].Email != "join1@example.com" || results[1].Email != "join2@example.com" {
-		t.Errorf("Should find all two emails with Join select")
 	}
 }
 
@@ -659,52 +601,6 @@ func TestTimeWithZone(t *testing.T) {
 	}
 }
 
-func TestHstore(t *testing.T) {
-	type Details struct {
-		Id   int64
-		Bulk postgres.Hstore
-	}
-
-	if dialect := os.Getenv("micros_DIALECT"); dialect != "postgres" {
-		t.Skip()
-	}
-
-	if err := db.Exec("CREATE EXTENSION IF NOT EXISTS hstore").Error; err != nil {
-		fmt.Println("\033[31mHINT: Must be superuser to create hstore extension (ALTER USER micros WITH SUPERUSER;)\033[0m")
-		panic(fmt.Sprintf("No error should happen when create hstore extension, but got %+v", err))
-	}
-
-	db.Exec("drop table details")
-
-	if err := db.CreateTable(&Details{}).Error; err != nil {
-		panic(fmt.Sprintf("No error should happen when create table, but got %+v", err))
-	}
-
-	bankAccountId, phoneNumber, opinion := "123456", "14151321232", "sharkbait"
-	bulk := map[string]*string{
-		"bankAccountId": &bankAccountId,
-		"phoneNumber":   &phoneNumber,
-		"opinion":       &opinion,
-	}
-	d := Details{Bulk: bulk}
-	db.Save(&d)
-
-	var d2 Details
-	if err := db.First(&d2).Error; err != nil {
-		t.Errorf("Got error when tried to fetch details: %+v", err)
-	}
-
-	for k := range bulk {
-		if r, ok := d2.Bulk[k]; ok {
-			if res, _ := bulk[k]; *res != *r {
-				t.Errorf("Details should be equal")
-			}
-		} else {
-			t.Errorf("Details should be existed")
-		}
-	}
-}
-
 func TestSetAndGet(t *testing.T) {
 	if value, ok := db.Set("hello", "world").Get("hello"); !ok {
 		t.Errorf("Should be able to get setting after set")
@@ -719,36 +615,17 @@ func TestSetAndGet(t *testing.T) {
 	}
 }
 
-func TestCompatibilityMode(t *testing.T) {
-	db, _ := micros.Open("testdb", "")
-	testdb.SetQueryFunc(func(query string) (driver.Rows, error) {
-		columns := []string{"id", "name", "age"}
-		result := `
-		1,Tim,20
-		2,Joe,25
-		3,Bob,30
-		`
-		return testdb.RowsFromCSVString(columns, result), nil
-	})
-
-	var users []User
-	db.Find(&users)
-	if (users[0].Name != "Tim") || len(users) != 3 {
-		t.Errorf("Unexcepted result returned")
-	}
-}
-
 func TestOpenExistingDB(t *testing.T) {
 	db.Save(&User{Name: "jnfeinstein"})
 	dialect := os.Getenv("micros_DIALECT")
 
-	ndb, err := micros.Open(dialect, db.DB())
+	ndb, err := Open(dialect, db.DB())
 	if err != nil {
 		t.Errorf("Should have wrapped the existing DB connection")
 	}
 
 	var user User
-	if ndb.Where("name = ?", "jnfeinstein").First(&user).Error == micros.ErrRecordNotFound {
+	if ndb.Where("name = ?", "jnfeinstein").First(&user).Error == ErrRecordNotFound {
 		t.Errorf("Should have found existing record")
 	}
 }
@@ -772,7 +649,7 @@ func TestDdlErrors(t *testing.T) {
 }
 
 func TestOpenWithOneParameter(t *testing.T) {
-	ndb, err := micros.Open("dialect")
+	ndb, err := Open("dialect")
 	if ndb != nil {
 		t.Error("Open with one parameter returned non nil for db")
 	}
@@ -851,14 +728,14 @@ func BenchmarkRawSql(b *testing.B) {
 		now := time.Now()
 		email := EmailWithIdx{Email: e, UserAgent: "pc", RegisteredAt: &now}
 		// Insert
-		db.QueryRow(insertSql, email.UserId, email.Email, email.UserAgent, email.RegisteredAt, time.Now(), time.Now()).Scan(&id)
+		ndb.QueryRow(insertSql, email.UserId, email.Email, email.UserAgent, email.RegisteredAt, time.Now(), time.Now()).Scan(&id)
 		// Query
-		rows, _ := db.Query(querySql, email.Email)
+		rows, _ := ndb.Query(querySql, email.Email)
 		rows.Close()
 		// Update
-		db.Exec(updateSql, "new-"+e, time.Now(), id)
+		ndb.Exec(updateSql, "new-"+e, time.Now(), id)
 		// Delete
-		db.Exec(deleteSql, id)
+		ndb.Exec(deleteSql, id)
 	}
 }
 
