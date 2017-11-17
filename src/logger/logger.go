@@ -11,6 +11,13 @@ const (
 
 var l Logger
 
+func GetIns() Logger {
+	if l == nil {
+		l = NewLogger()
+	}
+	return l
+}
+
 func NewLogger() Logger {
 	logFile, _ := os.Create("debug.log")
 	l = &DefaultLogger{log.New(logFile, "", log.LstdFlags|log.Lshortfile)}
