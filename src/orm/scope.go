@@ -878,6 +878,7 @@ func (scope *Scope) row() *sql.Row {
 
 	result := &RowQueryResult{}
 	scope.InstanceSet("row_query_result", result)
+	scope.callCallbacks(scope.db.parent.callbacks.rowQueries)
 
 	return result.Row
 }
@@ -887,6 +888,7 @@ func (scope *Scope) rows() (*sql.Rows, error) {
 
 	result := &RowsQueryResult{}
 	scope.InstanceSet("row_query_result", result)
+	scope.callCallbacks(scope.db.parent.callbacks.rowQueries)
 
 	return result.Rows, result.Error
 }

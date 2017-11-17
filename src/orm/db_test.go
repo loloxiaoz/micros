@@ -53,7 +53,7 @@ func TestStringPrimaryKey(t *testing.T) {
 	db.DropTable(&UUIDStruct{})
 	err := db.CreateTable(&UUIDStruct{}).Error
 	if err != nil {
-		t.Errorf("craete table error")
+		t.Errorf("craete table UUIDStruct error")
 	}
 
 	data := UUIDStruct{ID: "uuid", Name: "hello"}
@@ -64,6 +64,28 @@ func TestStringPrimaryKey(t *testing.T) {
 	data = UUIDStruct{ID: "uuid", Name: "hello world"}
 	if err := db.Save(&data).Error; err != nil || data.ID != "uuid" || data.Name != "hello world" {
 		t.Errorf("string primary key should not be populated")
+	}
+}
+
+func TestCreateUser(t *testing.T) {
+	db.DropTable(&User{})
+	db.CreateTable(&User{})
+	user := User{Name: "user"}
+	db.Save(&user)
+
+	var count1, count2 int64
+	db.Model(&User{}).Count(&count1)
+	if count1 <= 0 {
+		t.Errorf("Should find some users")
+	}
+
+	if db.Where("name = ?", "jinzhu; delete * from users").First(&User{}).Error == nil {
+		t.Errorf("Should got error with invalid SQL")
+	}
+
+	db.Model(&User{}).Count(&count2)
+	if count1 != count2 {
+		t.Errorf("No user should not be deleted by invalid SQL")
 	}
 }
 
@@ -81,20 +103,6 @@ func TestExceptionsWithInvalidSql(t *testing.T) {
 		t.Errorf("Should got error with invalid SQL")
 	}
 
-	var count1, count2 int64
-	db.Model(&User{}).Count(&count1)
-	if count1 <= 0 {
-		t.Errorf("Should find some users")
-	}
-
-	if db.Where("name = ?", "jinzhu; delete * from users").First(&User{}).Error == nil {
-		t.Errorf("Should got error with invalid SQL")
-	}
-
-	db.Model(&User{}).Count(&count2)
-	if count1 != count2 {
-		t.Errorf("No user should not be deleted by invalid SQL")
-	}
 }
 
 func TestSetTable(t *testing.T) {
@@ -716,32 +724,6 @@ func BenchmarkORM(b *testing.B) {
 		db.Model(&email).UpdateColumn("email", "new-"+e)
 		// Delete
 		db.Delete(&email)
-	}
-}
-
-func BenchmarkRawSql(b *testing.B) {
-	ndb, _ := sql.Open("postgres", "user=micros DB.ame=micros sslmode=disable")
-	ndb.SetMaxIdleConns(10)
-	insertSql := "INSERT INTO emails (user_id,email,user_agent,registered_at,created_at,updated_at) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id"
-	querySql := "SELECT * FROM emails WHERE email = $1 ORDER BY id LIMIT 1"
-	updateSql := "UPDATE emails SET email = $1, updated_at = $2 WHERE id = $3"
-	deleteSql := "DELETE FROM orders WHERE id = $1"
-
-	b.N = 2000
-	for x := 0; x < b.N; x++ {
-		var id int64
-		e := strconv.Itoa(x) + "benchmark@example.org"
-		now := time.Now()
-		email := EmailWithIdx{Email: e, UserAgent: "pc", RegisteredAt: &now}
-		// Insert
-		ndb.QueryRow(insertSql, email.UserId, email.Email, email.UserAgent, email.RegisteredAt, time.Now(), time.Now()).Scan(&id)
-		// Query
-		rows, _ := ndb.Query(querySql, email.Email)
-		rows.Close()
-		// Update
-		ndb.Exec(updateSql, "new-"+e, time.Now(), id)
-		// Delete
-		ndb.Exec(deleteSql, id)
 	}
 }
 
