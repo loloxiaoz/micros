@@ -3,6 +3,7 @@ package orm
 import (
 	"database/sql"
 	"errors"
+	_ "github.com/go-sql-driver/mysql"
 	"micros/logger"
 	"strings"
 	"time"
@@ -54,6 +55,7 @@ func Open(dialect string, args ...interface{}) (db *DB, err error) {
 		dialect: newDialect(dialect, dbSQL),
 	}
 	db.parent = db
+	db.logger.Info("open sql success")
 	if err != nil {
 		return
 	}

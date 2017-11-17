@@ -27,15 +27,15 @@ func init() {
 func OpenTestConnection() (db *DB, err error) {
 
 	fmt.Println("testing mysql...")
-	dbhost := os.Getenv("micros_DBADDRESS")
+	//	dbhost := os.Getenv("micros_DBADDRESS")
+	//todo  修改读配置
+	dbhost := "127.0.0.1:3306"
 	dbhost = fmt.Sprintf("tcp(%v)", dbhost)
-	db, err = Open("mysql", fmt.Sprintf("micros:micros@%v/micros?charset=utf8&parseTime=True", dbhost))
+	db, err = Open("mysql", fmt.Sprintf("root:@%v/micros?charset=utf8&parseTime=True", dbhost))
 	if err != nil {
 		panic("can't not open connection," + err.Error())
 	}
 
-	// db.SetLogger(Logger{log.New(os.Stdout, "\r\n", 0)})
-	// db.SetLogger(log.New(os.Stdout, "\r\n", 0))
 	if os.Getenv("DEBUG") == "true" {
 		db.LogMode(true)
 	}
