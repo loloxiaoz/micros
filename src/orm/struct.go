@@ -106,7 +106,6 @@ func (scope *Scope) GetModelStruct() *ModelStruct {
 	var modelStruct ModelStruct
 	// Scope value can't be nil
 	if scope.Value == nil {
-		scope.db.logger.Error("scope.value is nil")
 		return &modelStruct
 	}
 	reflectType := reflect.ValueOf(scope.Value).Type()

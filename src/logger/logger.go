@@ -9,9 +9,11 @@ const (
 	calldepth = 3
 )
 
-var l Logger = &DefaultLogger{log.New(os.Stdout, "", log.LstdFlags|log.Lshortfile)}
+var l Logger
 
 func NewLogger() Logger {
+	logFile, _ := os.Create("debug.log")
+	l = &DefaultLogger{log.New(logFile, "", log.LstdFlags|log.Lshortfile)}
 	return l
 }
 

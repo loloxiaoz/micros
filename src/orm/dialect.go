@@ -2,7 +2,6 @@ package orm
 
 import (
 	"database/sql"
-	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
@@ -57,7 +56,6 @@ func newDialect(name string, db SQLCommon) Dialect {
 		return dialect
 	}
 
-	fmt.Printf("`%v` is not officially supported, running under compatibility mode.\n", name)
 	commontDialect := &commonDialect{}
 	commontDialect.SetDB(db)
 	return commontDialect

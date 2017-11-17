@@ -21,13 +21,13 @@ func queryCallback(scope *Scope) {
 		results        = scope.IndirectValue()
 	)
 
-	if orderBy, ok := scope.Get("gorm:order_by_primary_key"); ok {
+	if orderBy, ok := scope.Get("micros:order_by_primary_key"); ok {
 		if primaryField := scope.PrimaryField(); primaryField != nil {
 			scope.Search.Order(fmt.Sprintf("%v.%v %v", scope.QuotedTableName(), scope.Quote(primaryField.DBName), orderBy))
 		}
 	}
 
-	if value, ok := scope.Get("gorm:query_destination"); ok {
+	if value, ok := scope.Get("micros:query_destination"); ok {
 		results = indirect(reflect.ValueOf(value))
 	}
 
@@ -49,7 +49,7 @@ func queryCallback(scope *Scope) {
 
 	if !scope.HasError() {
 		scope.db.RowsAffected = 0
-		if str, ok := scope.Get("gorm:query_option"); ok {
+		if str, ok := scope.Get("micros:query_option"); ok {
 			scope.SQL += addExtraSpaceIfExist(fmt.Sprint(str))
 		}
 

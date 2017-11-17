@@ -16,12 +16,11 @@ type DB struct {
 	RowsAffected int64
 
 	// single db
-	db                SQLCommon
-	blockGlobalUpdate bool
-	logMode           int
-	logger            logger.Logger
-	search            *search
-	values            map[string]interface{}
+	db      SQLCommon
+	logMode int
+	logger  logger.Logger
+	search  *search
+	values  map[string]interface{}
 
 	// global db
 	parent    *DB
@@ -110,17 +109,6 @@ func (s *DB) LogMode(enable bool) *DB {
 		s.logMode = 1
 	}
 	return s
-}
-
-// BlockGlobalUpdate if true, generates an error on update/delete without where clause.
-func (s *DB) BlockGlobalUpdate(enable bool) *DB {
-	s.blockGlobalUpdate = enable
-	return s
-}
-
-// HasBlockGlobalUpdate return state of block
-func (s *DB) HasBlockGlobalUpdate() bool {
-	return s.blockGlobalUpdate
 }
 
 // NewScope create a scope for current operation
@@ -559,14 +547,13 @@ func (s *DB) GetErrors() []error {
 
 func (s *DB) clone() *DB {
 	db := &DB{
-		db:                s.db,
-		parent:            s.parent,
-		logger:            s.logger,
-		logMode:           s.logMode,
-		values:            map[string]interface{}{},
-		Value:             s.Value,
-		Error:             s.Error,
-		blockGlobalUpdate: s.blockGlobalUpdate,
+		db:      s.db,
+		parent:  s.parent,
+		logger:  s.logger,
+		logMode: s.logMode,
+		values:  map[string]interface{}{},
+		Value:   s.Value,
+		Error:   s.Error,
 	}
 
 	for key, value := range s.values {
