@@ -6,7 +6,6 @@ import (
 	"reflect"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/jinzhu/inflection"
 )
@@ -107,9 +106,9 @@ func (scope *Scope) GetModelStruct() *ModelStruct {
 	var modelStruct ModelStruct
 	// Scope value can't be nil
 	if scope.Value == nil {
+		scope.db.logger.Error("scope.value is nil")
 		return &modelStruct
 	}
-
 	reflectType := reflect.ValueOf(scope.Value).Type()
 	for reflectType.Kind() == reflect.Slice || reflectType.Kind() == reflect.Ptr {
 		reflectType = reflectType.Elem()
@@ -173,10 +172,8 @@ func (scope *Scope) GetModelStruct() *ModelStruct {
 							}
 						}
 					}
-				} else if _, isTime := fieldValue.(*time.Time); isTime {
-					// is time
-					field.IsNormal = true
 				}
+				field.IsNormal = true
 			}
 
 			// Even it is ignored, also possible to decode db value into the field
@@ -201,7 +198,7 @@ func (scope *Scope) GetStructFields() (fields []*StructField) {
 
 func parseTagSetting(tags reflect.StructTag) map[string]string {
 	setting := map[string]string{}
-	for _, str := range []string{tags.Get("sql"), tags.Get("gorm")} {
+	for _, str := range []string{tags.Get("sql"), tags.Get("micros")} {
 		tags := strings.Split(str, ";")
 		for _, value := range tags {
 			v := strings.Split(value, ":")

@@ -55,7 +55,6 @@ func Open(dialect string, args ...interface{}) (db *DB, err error) {
 		dialect: newDialect(dialect, dbSQL),
 	}
 	db.parent = db
-	db.logger.Info("open sql success")
 	if err != nil {
 		return
 	}
@@ -166,7 +165,7 @@ func (s *DB) Offset(offset interface{}) *DB {
 // Order specify order when retrieve records from database, set reorder to `true` to overwrite defined conditions
 //     db.Order("name DESC")
 //     db.Order("name DESC", true) // reorder
-//     db.Order(gorm.Expr("name = ? DESC", "first"))
+//     db.Order(micros.Expr("name = ? DESC", "first"))
 func (s *DB) Order(value interface{}, reorder ...bool) *DB {
 	return s.clone().search.Order(value, reorder...).db
 }
@@ -188,12 +187,12 @@ func (s *DB) Having(query interface{}, values ...interface{}) *DB {
 }
 
 // Scopes pass current database connection to arguments `func(*DB) *DB`, which could be used to add conditions dynamically
-//     func AmountGreaterThan1000(db *gorm.DB) *gorm.DB {
+//     func AmountGreaterThan1000(db *micros.DB) *micros.DB {
 //         return db.Where("amount > ?", 1000)
 //     }
 //
-//     func OrderStatus(status []string) func (db *gorm.DB) *gorm.DB {
-//         return func (db *gorm.DB) *gorm.DB {
+//     func OrderStatus(status []string) func (db *micros.DB) *micros.DB {
+//         return func (db *micros.DB) *micros.DB {
 //             return db.Scopes(AmountGreaterThan1000).Where("status in (?)", status)
 //         }
 //     }
@@ -225,7 +224,7 @@ func (s *DB) Assign(attrs ...interface{}) *DB {
 func (s *DB) First(out interface{}, where ...interface{}) *DB {
 	newScope := s.clone().NewScope(out)
 	newScope.Search.Limit(1)
-	return newScope.Set("gorm:order_by_primary_key", "ASC").
+	return newScope.Set("micros:order_by_primary_key", "ASC").
 		inlineCondition(where...).db
 }
 
@@ -233,7 +232,7 @@ func (s *DB) First(out interface{}, where ...interface{}) *DB {
 func (s *DB) Last(out interface{}, where ...interface{}) *DB {
 	newScope := s.clone().NewScope(out)
 	newScope.Search.Limit(1)
-	return newScope.Set("gorm:order_by_primary_key", "DESC").
+	return newScope.Set("micros:order_by_primary_key", "DESC").
 		inlineCondition(where...).db
 }
 
@@ -244,7 +243,7 @@ func (s *DB) Find(out interface{}, where ...interface{}) *DB {
 
 // Scan scan value to a struct
 func (s *DB) Scan(dest interface{}) *DB {
-	return s.clone().NewScope(s.Value).Set("gorm:query_destination", dest).db
+	return s.clone().NewScope(s.Value).Set("micros:query_destination", dest).db
 }
 
 // Row return `*sql.Row` with given conditions
@@ -302,12 +301,13 @@ func (s *DB) FirstOrInit(out interface{}, where ...interface{}) *DB {
 func (s *DB) FirstOrCreate(out interface{}, where ...interface{}) *DB {
 	c := s.clone()
 	if result := s.First(out, where...); result.Error != nil {
+		s.print(result.RecordNotFound())
 		if !result.RecordNotFound() {
 			return result
 		}
 		return c.NewScope(out).inlineCondition(where...).initialize().db
 	} else if len(c.search.assignAttrs) > 0 {
-		return c.NewScope(out).InstanceSet("gorm:update_interface", c.search.assignAttrs).db
+		return c.NewScope(out).InstanceSet("micros:update_interface", c.search.assignAttrs).db
 	}
 	return c
 }
@@ -320,8 +320,8 @@ func (s *DB) Update(attrs ...interface{}) *DB {
 // Updates update attributes
 func (s *DB) Updates(values interface{}, ignoreProtectedAttrs ...bool) *DB {
 	return s.clone().NewScope(s.Value).
-		Set("gorm:ignore_protected_attrs", len(ignoreProtectedAttrs) > 0).
-		InstanceSet("gorm:update_interface", values).db
+		Set("micros:ignore_protected_attrs", len(ignoreProtectedAttrs) > 0).
+		InstanceSet("micros:update_interface", values).db
 }
 
 // UpdateColumn update attributes
@@ -332,9 +332,9 @@ func (s *DB) UpdateColumn(attrs ...interface{}) *DB {
 // UpdateColumns update attributes
 func (s *DB) UpdateColumns(values interface{}) *DB {
 	return s.clone().NewScope(s.Value).
-		Set("gorm:update_column", true).
-		Set("gorm:save_associations", false).
-		InstanceSet("gorm:update_interface", values).db
+		Set("micros:update_column", true).
+		Set("micros:save_associations", false).
+		InstanceSet("micros:update_interface", values).db
 }
 
 // Save update value in database, if the value doesn't have primary key, will insert it

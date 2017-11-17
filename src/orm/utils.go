@@ -15,7 +15,7 @@ import (
 // NowFunc returns current time, this function is exported in order to be able
 // to give the flexibility to the developer to customize it according to their
 // needs, e.g:
-//    gorm.NowFunc = func() time.Time {
+//    micros.orm.NowFunc = func() time.Time {
 //      return time.Now().UTC()
 //    }
 var NowFunc = func() time.Time {
@@ -26,8 +26,8 @@ var NowFunc = func() time.Time {
 var commonInitialisms = []string{"API", "ASCII", "CPU", "CSS", "DNS", "EOF", "GUID", "HTML", "HTTP", "HTTPS", "ID", "IP", "JSON", "LHS", "QPS", "RAM", "RHS", "RPC", "SLA", "SMTP", "SSH", "TLS", "TTL", "UI", "UID", "UUID", "URI", "URL", "UTF8", "VM", "XML", "XSRF", "XSS"}
 var commonInitialismsReplacer *strings.Replacer
 
-var goSrcRegexp = regexp.MustCompile(`jinzhu/gorm/.*.go`)
-var goTestRegexp = regexp.MustCompile(`jinzhu/gorm/.*test.go`)
+var goSrcRegexp = regexp.MustCompile(`micros/orm/.*.go`)
+var goTestRegexp = regexp.MustCompile(`micros/orm/.*test.go`)
 
 func init() {
 	var commonInitialismsForReplacer []string
@@ -123,7 +123,7 @@ type expr struct {
 }
 
 // Expr generate raw SQL expression, for example:
-//     DB.Model(&product).Update("price", gorm.Expr("price * ? + ?", 2, 100))
+//     DB.Model(&product).Update("price", orm.Expr("price * ? + ?", 2, 100))
 func Expr(expression string, args ...interface{}) *expr {
 	return &expr{expr: expression, args: args}
 }

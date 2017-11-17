@@ -4,11 +4,10 @@ package orm
 //import (
 //	"testing"
 //
-//	"github.com/jinzhu/gorm"
 //)
 //
 //type CalculateField struct {
-//	gorm.Model
+//	Model
 //	Name     string
 //	Children []CalculateFieldChild
 //	Category CalculateFieldCategory
@@ -20,13 +19,13 @@ package orm
 //}
 //
 //type CalculateFieldChild struct {
-//	gorm.Model
+//	Model
 //	CalculateFieldID uint
 //	Name             string
 //}
 //
 //type CalculateFieldCategory struct {
-//	gorm.Model
+//	Model
 //	CalculateFieldID uint
 //	Name             string
 //}

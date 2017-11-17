@@ -4,13 +4,12 @@ package orm
 //	"errors"
 //	"testing"
 //
-//	"github.com/jinzhu/gorm"
 //)
 //
-//func TestErrorsCanBeUsedOutsideGorm(t *testing.T) {
+//func TestErrorsCanBeUsedOutside(t *testing.T) {
 //	errs := []error{errors.New("First"), errors.New("Second")}
 //
-//	gErrs := gorm.Errors(errs)
+//	gErrs := Errors(errs)
 //	gErrs = gErrs.Add(errors.New("Third"))
 //	gErrs = gErrs.Add(gErrs)
 //

@@ -50,10 +50,17 @@ func TestStringPrimaryKey(t *testing.T) {
 		Name string
 	}
 
+	db.DropTable(&UUIDStruct{})
+	err := db.CreateTable(&UUIDStruct{}).Error
+	if err != nil {
+		t.Errorf("craete table error")
+	}
+
 	data := UUIDStruct{ID: "uuid", Name: "hello"}
 	if err := db.Save(&data).Error; err != nil || data.ID != "uuid" || data.Name != "hello" {
 		t.Errorf("string primary key should not be populated")
 	}
+	panic("aa")
 
 	data = UUIDStruct{ID: "uuid", Name: "hello world"}
 	if err := db.Save(&data).Error; err != nil || data.ID != "uuid" || data.Name != "hello world" {

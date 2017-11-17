@@ -9,7 +9,7 @@ import (
 )
 
 type Model struct {
-	ID        uint `gorm:"primary_key"`
+	ID        uint `micros:"primary_key"`
 	Ver       int  `sql:"version"`
 	CreatedAt time.Time
 	UpdatedAt time.Time

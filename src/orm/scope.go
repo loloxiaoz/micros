@@ -133,7 +133,7 @@ func (scope *Scope) Fields() []*Field {
 	return *scope.fields
 }
 
-// FieldByName find `gorm.Field` with field name or db name
+// FieldByName find `micros.Field` with field name or db name
 func (scope *Scope) FieldByName(name string) (field *Field, ok bool) {
 	var (
 		dbName           = ToDBName(name)
@@ -209,9 +209,9 @@ func (scope *Scope) HasColumn(column string) bool {
 // SetColumn to set the column's value, column could be field or field's name/dbname
 func (scope *Scope) SetColumn(column interface{}, value interface{}) error {
 	var updateAttrs = map[string]interface{}{}
-	if attrs, ok := scope.InstanceGet("gorm:update_attrs"); ok {
+	if attrs, ok := scope.InstanceGet("micros:update_attrs"); ok {
 		updateAttrs = attrs.(map[string]interface{})
-		defer scope.InstanceSet("gorm:update_attrs", updateAttrs)
+		defer scope.InstanceSet("micros:update_attrs", updateAttrs)
 	}
 
 	if field, ok := column.(*Field); ok {
@@ -400,7 +400,7 @@ func (scope *Scope) Begin() *Scope {
 	if db, ok := scope.SQLDB().(sqlDb); ok {
 		if tx, err := db.Begin(); err == nil {
 			scope.db.db = interface{}(tx).(SQLCommon)
-			scope.InstanceSet("gorm:started_transaction", true)
+			scope.InstanceSet("micros:started_transaction", true)
 		}
 	}
 	return scope
@@ -408,7 +408,7 @@ func (scope *Scope) Begin() *Scope {
 
 // CommitOrRollback commit current transaction if no error happened, otherwise will rollback it
 func (scope *Scope) CommitOrRollback() *Scope {
-	if _, ok := scope.InstanceGet("gorm:started_transaction"); ok {
+	if _, ok := scope.InstanceGet("micros:started_transaction"); ok {
 		if db, ok := scope.db.db.(sqlTx); ok {
 			if scope.HasError() {
 				db.Rollback()
@@ -422,7 +422,7 @@ func (scope *Scope) CommitOrRollback() *Scope {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Private Methods For *gorm.Scope
+// Private Methods For *micros.Scope
 ////////////////////////////////////////////////////////////////////////////////
 
 func (scope *Scope) callMethod(methodName string, reflectValue reflect.Value) {
@@ -813,6 +813,16 @@ func (scope *Scope) inlineCondition(values ...interface{}) *Scope {
 	return scope
 }
 
+func (scope *Scope) callCallbacks(funcs []*func(s *Scope)) *Scope {
+	for _, f := range funcs {
+		(*f)(scope)
+		if scope.skipLeft {
+			break
+		}
+	}
+	return scope
+}
+
 func convertInterfaceToMap(values interface{}, withIgnoredField bool) map[string]interface{} {
 	var attrs = map[string]interface{}{}
 
@@ -908,6 +918,7 @@ func (scope *Scope) pluck(column string, value interface{}) *Scope {
 	}
 
 	rows, err := scope.rows()
+	scope.db.print(rows)
 	if scope.Err(err) == nil {
 		defer rows.Close()
 		for rows.Next() {
@@ -964,7 +975,7 @@ func (scope *Scope) changeableField(field *Field) bool {
 
 // getTableOptions return the table options string or an empty string if the table options does not exist
 func (scope *Scope) getTableOptions() string {
-	tableOptions, ok := scope.Get("gorm:table_options")
+	tableOptions, ok := scope.Get("micros:table_options")
 	if !ok {
 		return ""
 	}
@@ -985,10 +996,8 @@ func (scope *Scope) createTable() *Scope {
 			if strings.Contains(strings.ToLower(sqlTag), "primary key") {
 				primaryKeyInColumnType = true
 			}
-
 			tags = append(tags, scope.Quote(field.DBName)+" "+sqlTag)
 		}
-
 		if field.IsPrimaryKey {
 			primaryKeys = append(primaryKeys, scope.Quote(field.DBName))
 		}
@@ -999,7 +1008,9 @@ func (scope *Scope) createTable() *Scope {
 		primaryKeyStr = fmt.Sprintf(", PRIMARY KEY (%v)", strings.Join(primaryKeys, ","))
 	}
 
-	scope.Raw(fmt.Sprintf("CREATE TABLE %v (%v %v) %s", scope.QuotedTableName(), strings.Join(tags, ","), primaryKeyStr, scope.getTableOptions())).Exec()
+	createSql := fmt.Sprintf("CREATE TABLE %v (%v %v) %s", scope.QuotedTableName(), strings.Join(tags, ","), primaryKeyStr, scope.getTableOptions())
+	scope.Raw(createSql).Exec()
+	scope.db.logger.Info(createSql)
 
 	scope.autoIndex()
 	return scope

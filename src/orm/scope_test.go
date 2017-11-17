@@ -2,20 +2,19 @@ package orm
 
 //
 //import (
-//	"github.com/jinzhu/gorm"
 //	"testing"
 //)
 //
-//func NameIn1And2(d *gorm.DB) *gorm.DB {
+//func NameIn1And2(d *DB) *DB {
 //	return d.Where("name in (?)", []string{"ScopeUser1", "ScopeUser2"})
 //}
 //
-//func NameIn2And3(d *gorm.DB) *gorm.DB {
+//func NameIn2And3(d *DB) *.DB {
 //	return d.Where("name in (?)", []string{"ScopeUser2", "ScopeUser3"})
 //}
 //
-//func NameIn(names []string) func(d *gorm.DB) *gorm.DB {
-//	return func(d *gorm.DB) *gorm.DB {
+//func NameIn(names []string) func(d *DB) *DB {
+//	return func(d *DB) *DB {
 //		return d.Where("name in (?)", names)
 //	}
 //}

@@ -23,7 +23,7 @@ package orm
 //	}
 //
 //	for key, value := range maps {
-//		if gorm.ToDBName(key) != value {
+//		if ToDBName(key) != value {
 //			t.Errorf("%v ToDBName should equal %v, but got %v", key, value, gorm.ToDBName(key))
 //		}
 //	}
