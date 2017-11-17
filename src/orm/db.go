@@ -592,7 +592,5 @@ func (s *DB) log(v ...interface{}) {
 }
 
 func (s *DB) slog(sql string, t time.Time, vars ...interface{}) {
-	if s.logMode == 2 {
-		s.print("sql", fileWithLineNum(), NowFunc().Sub(t), sql, vars, s.RowsAffected)
-	}
+	s.print("sql ", fileWithLineNum()+" ", NowFunc().Sub(t), " "+sql+" ", vars, s.RowsAffected)
 }

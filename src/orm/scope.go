@@ -918,7 +918,6 @@ func (scope *Scope) pluck(column string, value interface{}) *Scope {
 	}
 
 	rows, err := scope.rows()
-	scope.db.print(rows)
 	if scope.Err(err) == nil {
 		defer rows.Close()
 		for rows.Next() {
@@ -1010,7 +1009,6 @@ func (scope *Scope) createTable() *Scope {
 
 	createSql := fmt.Sprintf("CREATE TABLE %v (%v %v) %s", scope.QuotedTableName(), strings.Join(tags, ","), primaryKeyStr, scope.getTableOptions())
 	scope.Raw(createSql).Exec()
-	scope.db.logger.Info(createSql)
 
 	scope.autoIndex()
 	return scope

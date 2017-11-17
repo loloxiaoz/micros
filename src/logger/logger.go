@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	calldepth = 3
+	calldepth = 6
 )
 
 var l Logger = &DefaultLogger{log.New(os.Stderr, "", log.LstdFlags|log.Lshortfile)}
