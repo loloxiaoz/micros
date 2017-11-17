@@ -12,6 +12,10 @@ type DefaultLogger struct {
 	*log.Logger
 }
 
+func (l *DefaultLogger) Sql(v ...interface{}) {
+	l.Output(6, header(color.GreenString("SQL "), fmt.Sprint(v...)))
+}
+
 func (l *DefaultLogger) Debug(v ...interface{}) {
 	l.Output(calldepth, header("DEBUG", fmt.Sprint(v...)))
 }

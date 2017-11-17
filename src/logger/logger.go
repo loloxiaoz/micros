@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	calldepth = 6
+	calldepth = 3
 )
 
 var l Logger = &DefaultLogger{log.New(os.Stderr, "", log.LstdFlags|log.Lshortfile)}
@@ -16,6 +16,8 @@ func NewLogger() Logger {
 }
 
 type Logger interface {
+	Sql(v ...interface{})
+
 	Debug(v ...interface{})
 	Debugf(format string, v ...interface{})
 
