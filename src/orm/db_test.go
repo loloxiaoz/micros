@@ -60,7 +60,6 @@ func TestStringPrimaryKey(t *testing.T) {
 	if err := db.Save(&data).Error; err != nil || data.ID != "uuid" || data.Name != "hello" {
 		t.Errorf("string primary key should not be populated")
 	}
-	panic("aa")
 
 	data = UUIDStruct{ID: "uuid", Name: "hello world"}
 	if err := db.Save(&data).Error; err != nil || data.ID != "uuid" || data.Name != "hello world" {

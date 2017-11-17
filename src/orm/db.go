@@ -24,8 +24,9 @@ type DB struct {
 	values            map[string]interface{}
 
 	// global db
-	parent  *DB
-	dialect Dialect
+	parent    *DB
+	callbacks *Callback
+	dialect   Dialect
 }
 
 type closer interface {
@@ -49,10 +50,11 @@ func Open(dialect string, args ...interface{}) (db *DB, err error) {
 	}
 
 	db = &DB{
-		db:      dbSQL,
-		logger:  logger.NewLogger(),
-		values:  map[string]interface{}{},
-		dialect: newDialect(dialect, dbSQL),
+		db:        dbSQL,
+		logger:    logger.NewLogger(),
+		values:    map[string]interface{}{},
+		callbacks: DefaultCallback,
+		dialect:   newDialect(dialect, dbSQL),
 	}
 	db.parent = db
 	if err != nil {
@@ -225,7 +227,7 @@ func (s *DB) First(out interface{}, where ...interface{}) *DB {
 	newScope := s.clone().NewScope(out)
 	newScope.Search.Limit(1)
 	return newScope.Set("micros:order_by_primary_key", "ASC").
-		inlineCondition(where...).db
+		inlineCondition(where...).callCallbacks(s.parent.callbacks.queries).db
 }
 
 // Last find last record that match given conditions, order by primary key
@@ -233,17 +235,17 @@ func (s *DB) Last(out interface{}, where ...interface{}) *DB {
 	newScope := s.clone().NewScope(out)
 	newScope.Search.Limit(1)
 	return newScope.Set("micros:order_by_primary_key", "DESC").
-		inlineCondition(where...).db
+		inlineCondition(where...).callCallbacks(s.parent.callbacks.queries).db
 }
 
 // Find find records that match given conditions
 func (s *DB) Find(out interface{}, where ...interface{}) *DB {
-	return s.clone().NewScope(out).inlineCondition(where...).db
+	return s.clone().NewScope(out).inlineCondition(where...).callCallbacks(s.parent.callbacks.queries).db
 }
 
 // Scan scan value to a struct
 func (s *DB) Scan(dest interface{}) *DB {
-	return s.clone().NewScope(s.Value).Set("micros:query_destination", dest).db
+	return s.clone().NewScope(s.Value).Set("micros:query_destination", dest).callCallbacks(s.parent.callbacks.queries).db
 }
 
 // Row return `*sql.Row` with given conditions
@@ -301,13 +303,12 @@ func (s *DB) FirstOrInit(out interface{}, where ...interface{}) *DB {
 func (s *DB) FirstOrCreate(out interface{}, where ...interface{}) *DB {
 	c := s.clone()
 	if result := s.First(out, where...); result.Error != nil {
-		s.print(result.RecordNotFound())
 		if !result.RecordNotFound() {
 			return result
 		}
-		return c.NewScope(out).inlineCondition(where...).initialize().db
+		return c.NewScope(out).inlineCondition(where...).initialize().callCallbacks(c.parent.callbacks.creates).db
 	} else if len(c.search.assignAttrs) > 0 {
-		return c.NewScope(out).InstanceSet("micros:update_interface", c.search.assignAttrs).db
+		return c.NewScope(out).InstanceSet("micros:update_interface", c.search.assignAttrs).callCallbacks(c.parent.callbacks.updates).db
 	}
 	return c
 }
@@ -321,7 +322,8 @@ func (s *DB) Update(attrs ...interface{}) *DB {
 func (s *DB) Updates(values interface{}, ignoreProtectedAttrs ...bool) *DB {
 	return s.clone().NewScope(s.Value).
 		Set("micros:ignore_protected_attrs", len(ignoreProtectedAttrs) > 0).
-		InstanceSet("micros:update_interface", values).db
+		InstanceSet("micros:update_interface", values).
+		callCallbacks(s.parent.callbacks.updates).db
 }
 
 // UpdateColumn update attributes
@@ -341,24 +343,24 @@ func (s *DB) UpdateColumns(values interface{}) *DB {
 func (s *DB) Save(value interface{}) *DB {
 	scope := s.clone().NewScope(value)
 	if !scope.PrimaryKeyZero() {
-		newDB := scope.db
+		newDB := scope.callCallbacks(s.parent.callbacks.updates).db
 		if newDB.Error == nil && newDB.RowsAffected == 0 {
 			return s.New().FirstOrCreate(value)
 		}
 		return newDB
 	}
-	return scope.db
+	return scope.callCallbacks(s.parent.callbacks.creates).db
 }
 
 // Create insert the value into database
 func (s *DB) Create(value interface{}) *DB {
 	scope := s.clone().NewScope(value)
-	return scope.db
+	return scope.callCallbacks(s.parent.callbacks.creates).db
 }
 
 // Delete delete value match given conditions, if the value has primary key, then will including the primary key as condition
 func (s *DB) Delete(value interface{}, where ...interface{}) *DB {
-	return s.clone().NewScope(value).inlineCondition(where...).db
+	return s.clone().NewScope(value).inlineCondition(where...).callCallbacks(s.parent.callbacks.deletes).db
 }
 
 // Raw use raw sql as conditions, won't run it unless invoked by other methods
