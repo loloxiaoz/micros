@@ -3,8 +3,10 @@ package orm
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"micros/logger"
+	"os"
 	"strings"
 	"time"
 )
@@ -582,4 +584,23 @@ func (s *DB) log(v ...interface{}) {
 
 func (s *DB) slog(sql string, t time.Time, vars ...interface{}) {
 	s.logger.Sql(fileWithLineNum()+" ", NowFunc().Sub(t), " "+sql+" ", vars, s.RowsAffected)
+}
+
+//todo add config
+func OpenConnection() (db *DB) {
+
+	//	dbhost := os.Getenv("micros_DBADDRESS")
+	//todo  修改读配置
+	dbhost := "127.0.0.1:3306"
+	dbhost = fmt.Sprintf("tcp(%v)", dbhost)
+	db, err := Open("mysql", fmt.Sprintf("root:@%v/micros?charset=utf8&parseTime=True", dbhost))
+	if err != nil {
+		panic("can't not open connection," + err.Error())
+	}
+
+	if os.Getenv("DEBUG") == "true" {
+		db.LogMode(true)
+	}
+	db.DB().SetMaxIdleConns(10)
+	return
 }
