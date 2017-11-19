@@ -35,9 +35,9 @@ func TestCalculateField(t *testing.T) {
 		t.Errorf("Should calculate fields correctly for the first time")
 	}
 
-	if _, ok := scope.FieldByName("embedded_name"); !ok {
-		t.Errorf("should find embedded field")
+	if field, ok := scope.FieldByName("TestTag"); !ok {
+		t.Errorf("should find TestTag ")
 	} else if _, ok := field.TagSettings["NOT NULL"]; !ok {
-		t.Errorf("should find embedded field's tag settings")
+		t.Errorf("should find TestTag's tag settings")
 	}
 }
