@@ -3,8 +3,10 @@ package route
 import (
 	"github.com/gin-gonic/gin"
 	"micros/logger"
+	"micros/monitor"
 	"micros/orm"
 	"micros/toolkit"
+	"net/http"
 	"net/http/httputil"
 )
 
@@ -40,7 +42,11 @@ func Exception() gin.HandlerFunc {
 				db, _ := c.Get("db")
 				tx := interface{}(db).(*orm.DB)
 				tx.Rollback()
-				c.AbortWithStatus(500)
+				c.AbortWithStatus(http.StatusInternalServerError)
+				flags := map[string]string{
+					"endpoint": c.Request.URL.RequestURI(),
+				}
+				monitor.Report(flags, err, c.Errors)
 			}
 		}()
 		c.Next()
