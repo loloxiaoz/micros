@@ -19,13 +19,15 @@ func GetIns() Logger {
 }
 
 func NewLogger() Logger {
-	logFile, _ := os.Create("debug.log")
+	logFile, _ := os.Create("../debug.log")
 	l = &DefaultLogger{log.New(logFile, "", log.LstdFlags|log.Lshortfile)}
 	return l
 }
 
 type Logger interface {
 	Sql(v ...interface{})
+
+	Http(v ...interface{})
 
 	Debug(v ...interface{})
 	Debugf(format string, v ...interface{})
