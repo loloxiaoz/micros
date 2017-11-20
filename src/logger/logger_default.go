@@ -13,11 +13,12 @@ type DefaultLogger struct {
 }
 
 func (l *DefaultLogger) Sql(v ...interface{}) {
+
 	l.Output(6, header(color.GreenString("SQL "), fmt.Sprint(v...)))
 }
 
 func (l *DefaultLogger) Http(v ...interface{}) {
-	l.Output(6, header(color.GreenString("Http"), fmt.Sprint(v...)))
+	l.Output(6, header(color.GreenString("HTTP"), fmt.Sprint(v...)))
 }
 
 func (l *DefaultLogger) Debug(v ...interface{}) {

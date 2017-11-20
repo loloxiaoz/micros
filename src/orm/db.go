@@ -7,6 +7,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"micros/logger"
 	"os"
+	"reflect"
 	"strings"
 	"time"
 )
@@ -583,7 +584,12 @@ func (s *DB) log(v ...interface{}) {
 }
 
 func (s *DB) slog(sql string, t time.Time, vars ...interface{}) {
-	s.logger.Sql(fileWithLineNum()+" ", NowFunc().Sub(t), " "+sql+" ", vars, s.RowsAffected)
+	for _, seatVar := range vars {
+		v := reflect.ValueOf(seatVar)
+		str := fmt.Sprintf("'%v'", v)
+		sql = strings.Replace(sql, "?", str, 1)
+	}
+	s.logger.Sql(fileWithLineNum()+" ", sql+" [", NowFunc().Sub(t), "] [", s.RowsAffected, "]")
 }
 
 //todo add config
