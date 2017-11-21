@@ -7,9 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var client *raven.Client
-
-func init() {
+func initSentry() {
 	client, _ = raven.New("http://63302e6e5dc742f5888732dcf7e24019:b163737abe194898846c9b343f9a3028@sentry.xcodecraft.cn/2")
 }
 

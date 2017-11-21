@@ -1,4 +1,4 @@
-package route
+package server
 
 import (
 	"github.com/gin-gonic/gin"
@@ -18,27 +18,28 @@ func execRequest(r http.Handler, method, path string) *httptest.ResponseRecorder
 
 func TestORM(t *testing.T) {
 	r := NewServer()
-	r.route.POST("/users", func(c *gin.Context) {
-		db, _ := c.Get("db")
+	r.Route.POST("/users", func(c *gin.Context) {
+		db, _ := c.Get(dbExecutor)
 		tx := interface{}(db).(*orm.DB)
 		user := orm.User{Name: "micros 22"}
 		tx.Save(user)
 		c.String(http.StatusOK, "save micros")
 	})
-	w := execRequest(r.route, "POST", "/users")
-	toolkit.AssertEqual(w.Code, 200, t)
+	w1 := execRequest(r.Route, "POST", "/users")
+	toolkit.AssertEqual(w1.Code, 200, t)
+
 }
 
 func TestORMException(t *testing.T) {
 	r := NewServer()
-	r.route.POST("/users2", func(c *gin.Context) {
-		db, _ := c.Get("db")
+	r.Route.POST("/users2", func(c *gin.Context) {
+		db, _ := c.Get(dbExecutor)
 		tx := interface{}(db).(*orm.DB)
 		user := orm.User{Name: "micros exception"}
 		tx.Save(user)
 		panic("exception")
 		c.String(http.StatusOK, "save micros exception")
 	})
-	w := execRequest(r.route, "POST", "/users2")
+	w := execRequest(r.Route, "POST", "/users2")
 	toolkit.AssertEqual(w.Code, 500, t)
 }
