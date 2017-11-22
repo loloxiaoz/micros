@@ -12,7 +12,6 @@ type Registry interface {
 	Deregister(*Service) error
 	GetService(string) ([]*Service, error)
 	ListServices() ([]*Service, error)
-	Watch() (Watcher, error)
 	String() string
 }
 
@@ -47,11 +46,6 @@ func GetService(name string) ([]*Service, error) {
 // List the services. Only returns service names
 func ListServices() ([]*Service, error) {
 	return DefaultRegistry.ListServices()
-}
-
-// Watch returns a watcher which allows you to track updates to the registry.
-func Watch() (Watcher, error) {
-	return DefaultRegistry.Watch()
 }
 
 func String() string {

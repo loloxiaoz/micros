@@ -197,3 +197,24 @@ func TestConsul_GetService_WithUnhealthyServiceNodes(t *testing.T) {
 		t.Fatalf("Expected len of nodes to be `%d`, got `%d`.", exp, act)
 	}
 }
+
+func newHealthCheck(node, name, status string) *consul.HealthCheck {
+	return &consul.HealthCheck{
+		Node:        node,
+		Name:        name,
+		Status:      status,
+		ServiceName: name,
+	}
+}
+
+func newServiceEntry(node, address, name, version string, checks []*consul.HealthCheck) *consul.ServiceEntry {
+	return &consul.ServiceEntry{
+		Node: &consul.Node{Node: node, Address: name},
+		Service: &consul.AgentService{
+			Service: name,
+			Address: address,
+			Tags:    encodeVersion(version),
+		},
+		Checks: checks,
+	}
+}
