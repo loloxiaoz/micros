@@ -1,4 +1,4 @@
-package consul
+package registry
 
 import (
 	"bytes"
@@ -11,7 +11,7 @@ import (
 	consul "github.com/hashicorp/consul/api"
 )
 
-type mockRegistry struct {
+type mockConsulRegistry struct {
 	body   []byte
 	status int
 	err    error
@@ -27,7 +27,7 @@ func encodeData(obj interface{}) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func newMockServer(rg *mockRegistry, l net.Listener) error {
+func newMockServer(rg *mockConsulRegistry, l net.Listener) error {
 	mux := http.NewServeMux()
 	mux.HandleFunc(rg.url, func(w http.ResponseWriter, r *http.Request) {
 		if rg.err != nil {
@@ -40,7 +40,7 @@ func newMockServer(rg *mockRegistry, l net.Listener) error {
 	return http.Serve(l, mux)
 }
 
-func newConsulTestRegistry(r *mockRegistry) (*consulRegistry, func()) {
+func newConsulTestRegistry(r *mockConsulRegistry) (*consulRegistry, func()) {
 	l, err := net.Listen("tcp", "localhost:0")
 	if err != nil {
 		// blurgh?!!
@@ -67,7 +67,7 @@ func newServiceList(svc []*consul.ServiceEntry) []byte {
 }
 
 func TestConsul_GetService_WithError(t *testing.T) {
-	cr, cl := newConsulTestRegistry(&mockRegistry{
+	cr, cl := newConsulTestRegistry(&mockConsulRegistry{
 		err: errors.New("client-error"),
 		url: "/v1/health/service/service-name",
 	})
@@ -97,7 +97,7 @@ func TestConsul_GetService_WithHealthyServiceNodes(t *testing.T) {
 		),
 	}
 
-	cr, cl := newConsulTestRegistry(&mockRegistry{
+	cr, cl := newConsulTestRegistry(&mockConsulRegistry{
 		status: 200,
 		body:   newServiceList(svcs),
 		url:    "/v1/health/service/service-name",
@@ -137,7 +137,7 @@ func TestConsul_GetService_WithUnhealthyServiceNode(t *testing.T) {
 		),
 	}
 
-	cr, cl := newConsulTestRegistry(&mockRegistry{
+	cr, cl := newConsulTestRegistry(&mockConsulRegistry{
 		status: 200,
 		body:   newServiceList(svcs),
 		url:    "/v1/health/service/service-name",
@@ -177,7 +177,7 @@ func TestConsul_GetService_WithUnhealthyServiceNodes(t *testing.T) {
 		),
 	}
 
-	cr, cl := newConsulTestRegistry(&mockRegistry{
+	cr, cl := newConsulTestRegistry(&mockConsulRegistry{
 		status: 200,
 		body:   newServiceList(svcs),
 		url:    "/v1/health/service/service-name",

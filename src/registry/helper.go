@@ -1,10 +1,6 @@
-package mock
+package registry
 
-import (
-	"github.com/micro/go-micro/registry"
-)
-
-func addNodes(old, neu []*registry.Node) []*registry.Node {
+func addNodes(old, neu []*Node) []*Node {
 	for _, n := range neu {
 		var seen bool
 		for i, o := range old {
@@ -21,7 +17,7 @@ func addNodes(old, neu []*registry.Node) []*registry.Node {
 	return old
 }
 
-func addServices(old, neu []*registry.Service) []*registry.Service {
+func addServices(old, neu []*Service) []*Service {
 	for _, s := range neu {
 		var seen bool
 		for i, o := range old {
@@ -39,8 +35,8 @@ func addServices(old, neu []*registry.Service) []*registry.Service {
 	return old
 }
 
-func delNodes(old, del []*registry.Node) []*registry.Node {
-	var nodes []*registry.Node
+func delNodes(old, del []*Node) []*Node {
+	var nodes []*Node
 	for _, o := range old {
 		var rem bool
 		for _, n := range del {
@@ -56,8 +52,8 @@ func delNodes(old, del []*registry.Node) []*registry.Node {
 	return nodes
 }
 
-func delServices(old, del []*registry.Service) []*registry.Service {
-	var services []*registry.Service
+func delServices(old, del []*Service) []*Service {
+	var services []*Service
 	for i, o := range old {
 		var rem bool
 		for _, s := range del {

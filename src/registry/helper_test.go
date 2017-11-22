@@ -1,17 +1,15 @@
-package mock
+package registry
 
 import (
 	"testing"
-
-	"github.com/micro/go-micro/registry"
 )
 
 func TestDelServices(t *testing.T) {
-	services := []*registry.Service{
+	services := []*Service{
 		{
 			Name:    "foo",
 			Version: "1.0.0",
-			Nodes: []*registry.Node{
+			Nodes: []*Node{
 				{
 					Id:      "foo-123",
 					Address: "localhost",
@@ -22,7 +20,7 @@ func TestDelServices(t *testing.T) {
 		{
 			Name:    "foo",
 			Version: "1.0.0",
-			Nodes: []*registry.Node{
+			Nodes: []*Node{
 				{
 					Id:      "foo-123",
 					Address: "localhost",
@@ -32,7 +30,7 @@ func TestDelServices(t *testing.T) {
 		},
 	}
 
-	servs := delServices([]*registry.Service{services[0]}, []*registry.Service{services[1]})
+	servs := delServices([]*Service{services[0]}, []*Service{services[1]})
 	if i := len(servs); i > 0 {
 		t.Errorf("Expected 0 nodes, got %d: %+v", i, servs)
 	}
@@ -40,11 +38,11 @@ func TestDelServices(t *testing.T) {
 }
 
 func TestDelNodes(t *testing.T) {
-	services := []*registry.Service{
+	services := []*Service{
 		{
 			Name:    "foo",
 			Version: "1.0.0",
-			Nodes: []*registry.Node{
+			Nodes: []*Node{
 				{
 					Id:      "foo-123",
 					Address: "localhost",
@@ -60,7 +58,7 @@ func TestDelNodes(t *testing.T) {
 		{
 			Name:    "foo",
 			Version: "1.0.0",
-			Nodes: []*registry.Node{
+			Nodes: []*Node{
 				{
 					Id:      "foo-123",
 					Address: "localhost",

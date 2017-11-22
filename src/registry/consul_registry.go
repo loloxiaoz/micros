@@ -1,4 +1,4 @@
-package consul
+package registry
 
 import (
 	"crypto/tls"
@@ -51,7 +51,6 @@ func newConsulRegistry(opts ...Option) Registry {
 		o(&options)
 	}
 
-	// use default config
 	config := consul.DefaultConfig()
 	if options.Context != nil {
 		// Use the consul config passed in the options, if available
@@ -63,7 +62,6 @@ func newConsulRegistry(opts ...Option) Registry {
 		config.HttpClient = new(http.Client)
 	}
 
-	// set timeout
 	if options.Timeout > 0 {
 		config.HttpClient.Timeout = options.Timeout
 	}
@@ -83,7 +81,6 @@ func newConsulRegistry(opts ...Option) Registry {
 	// requires secure connection?
 	if options.Secure || options.TLSConfig != nil {
 		config.Scheme = "https"
-		// We're going to support InsecureSkipVerify
 		config.HttpClient.Transport = newTransport(options.TLSConfig)
 	}
 

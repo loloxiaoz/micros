@@ -1,20 +1,16 @@
-package mock
-
-import (
-	"github.com/micro/go-micro/registry"
-)
+package registry
 
 type mockRegistry struct {
-	Services map[string][]*registry.Service
+	Services map[string][]*Service
 }
 
 var (
-	mockData = map[string][]*registry.Service{
-		"foo": []*registry.Service{
+	mockData = map[string][]*Service{
+		"foo": []*Service{
 			{
 				Name:    "foo",
 				Version: "1.0.0",
-				Nodes: []*registry.Node{
+				Nodes: []*Node{
 					{
 						Id:      "foo-1.0.0-123",
 						Address: "localhost",
@@ -30,7 +26,7 @@ var (
 			{
 				Name:    "foo",
 				Version: "1.0.1",
-				Nodes: []*registry.Node{
+				Nodes: []*Node{
 					{
 						Id:      "foo-1.0.1-321",
 						Address: "localhost",
@@ -41,7 +37,7 @@ var (
 			{
 				Name:    "foo",
 				Version: "1.0.3",
-				Nodes: []*registry.Node{
+				Nodes: []*Node{
 					{
 						Id:      "foo-1.0.3-345",
 						Address: "localhost",
@@ -58,36 +54,36 @@ func (m *mockRegistry) init() {
 	m.Services = mockData
 }
 
-func (m *mockRegistry) GetService(service string) ([]*registry.Service, error) {
+func (m *mockRegistry) GetService(service string) ([]*Service, error) {
 	s, ok := m.Services[service]
 	if !ok || len(s) == 0 {
-		return nil, registry.ErrNotFound
+		return nil, ErrNotFound
 	}
 	return s, nil
 
 }
 
-func (m *mockRegistry) ListServices() ([]*registry.Service, error) {
-	var services []*registry.Service
+func (m *mockRegistry) ListServices() ([]*Service, error) {
+	var services []*Service
 	for _, service := range m.Services {
 		services = append(services, service...)
 	}
 	return services, nil
 }
 
-func (m *mockRegistry) Register(s *registry.Service, opts ...registry.RegisterOption) error {
-	services := addServices(m.Services[s.Name], []*registry.Service{s})
+func (m *mockRegistry) Register(s *Service, opts ...RegisterOption) error {
+	services := addServices(m.Services[s.Name], []*Service{s})
 	m.Services[s.Name] = services
 	return nil
 }
 
-func (m *mockRegistry) Deregister(s *registry.Service) error {
-	services := delServices(m.Services[s.Name], []*registry.Service{s})
+func (m *mockRegistry) Deregister(s *Service) error {
+	services := delServices(m.Services[s.Name], []*Service{s})
 	m.Services[s.Name] = services
 	return nil
 }
 
-func (m *mockRegistry) Watch() (registry.Watcher, error) {
+func (m *mockRegistry) Watch() (Watcher, error) {
 	return &mockWatcher{exit: make(chan bool)}, nil
 }
 
@@ -95,8 +91,8 @@ func (m *mockRegistry) String() string {
 	return "mock"
 }
 
-func NewRegistry() registry.Registry {
-	m := &mockRegistry{Services: make(map[string][]*registry.Service)}
+func NewMockRegistry() Registry {
+	m := &mockRegistry{Services: make(map[string][]*Service)}
 	m.init()
 	return m
 }

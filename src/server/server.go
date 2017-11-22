@@ -5,6 +5,7 @@ import (
 	"micros/logger"
 	"micros/monitor"
 	"micros/orm"
+	"micros/registry"
 	"micros/toolkit"
 	"net/http"
 	"net/http/httputil"
@@ -28,6 +29,11 @@ func NewServer() *Server {
 	server.Route.Use(StatAfter())
 	server.Route.Use(Exception())
 	server.Route.Use(AutoCommit())
+	server.Route.GET("/metrics", PrometheusHandler())
+	service := &registry.Service{Name: "micros"}
+	err := registry.DefaultRegistry.Register(service)
+	if err != nil {
+	}
 	return server
 }
 

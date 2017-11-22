@@ -1,6 +1,10 @@
 // Package registry is an interface for service discovery
 package registry
 
+import (
+	"errors"
+)
+
 // The registry provides an interface for service discovery
 // and an abstraction over varying implementations
 type Registry interface {
@@ -18,6 +22,7 @@ type RegisterOption func(*RegisterOptions)
 
 var (
 	DefaultRegistry = newConsulRegistry()
+	ErrNotFound     = errors.New("not found")
 )
 
 func NewRegistry(opts ...Option) Registry {

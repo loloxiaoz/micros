@@ -1,18 +1,16 @@
-package mock
+package registry
 
 import (
 	"testing"
-
-	"github.com/micro/go-micro/registry"
 )
 
 var (
-	testData = map[string][]*registry.Service{
-		"foo": []*registry.Service{
+	testData = map[string][]*Service{
+		"foo": []*Service{
 			{
 				Name:    "foo",
 				Version: "1.0.0",
-				Nodes: []*registry.Node{
+				Nodes: []*Node{
 					{
 						Id:      "foo-1.0.0-123",
 						Address: "localhost",
@@ -28,7 +26,7 @@ var (
 			{
 				Name:    "foo",
 				Version: "1.0.1",
-				Nodes: []*registry.Node{
+				Nodes: []*Node{
 					{
 						Id:      "foo-1.0.1-321",
 						Address: "localhost",
@@ -39,7 +37,7 @@ var (
 			{
 				Name:    "foo",
 				Version: "1.0.3",
-				Nodes: []*registry.Node{
+				Nodes: []*Node{
 					{
 						Id:      "foo-1.0.3-345",
 						Address: "localhost",
@@ -48,11 +46,11 @@ var (
 				},
 			},
 		},
-		"bar": []*registry.Service{
+		"bar": []*Service{
 			{
 				Name:    "bar",
 				Version: "default",
-				Nodes: []*registry.Node{
+				Nodes: []*Node{
 					{
 						Id:      "bar-1.0.0-123",
 						Address: "localhost",
@@ -68,7 +66,7 @@ var (
 			{
 				Name:    "bar",
 				Version: "latest",
-				Nodes: []*registry.Node{
+				Nodes: []*Node{
 					{
 						Id:      "bar-1.0.1-321",
 						Address: "localhost",
@@ -81,9 +79,9 @@ var (
 )
 
 func TestMockRegistry(t *testing.T) {
-	m := NewRegistry()
+	m := NewMockRegistry()
 
-	fn := func(k string, v []*registry.Service) {
+	fn := func(k string, v []*Service) {
 		services, err := m.GetService(k)
 		if err != nil {
 			t.Errorf("Unexpected error getting service %s: %v", k, err)

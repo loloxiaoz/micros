@@ -1,4 +1,4 @@
-package consul
+package registry
 
 import (
 	"github.com/hashicorp/consul/api"

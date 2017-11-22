@@ -1,16 +1,14 @@
-package mock
+package registry
 
 import (
 	"errors"
-
-	"github.com/micro/go-micro/registry"
 )
 
 type mockWatcher struct {
 	exit chan bool
 }
 
-func (m *mockWatcher) Next() (*registry.Result, error) {
+func (m *mockWatcher) Next() (*Result, error) {
 	// not implement so we just block until exit
 	select {
 	case <-m.exit:

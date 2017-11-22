@@ -23,6 +23,5 @@ func main() {
 		c.String(http.StatusOK, "test2 ok")
 	})
 
-	r.Route.GET("/metrics", server.PrometheusHandler())
 	r.Route.Run()
 }
