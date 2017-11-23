@@ -2,6 +2,7 @@ package server
 
 import (
 	"github.com/gin-gonic/gin"
+	"micros/config"
 	"micros/logger"
 	"micros/monitor"
 	"micros/orm"
@@ -63,7 +64,7 @@ func AutoCommit() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		db := orm.OpenConnection()
 		tx := db.Begin()
-		c.Set(dbExecutor, tx)
+		config.X.Regist(config.SQLE, tx, "autocommit")
 		c.Next()
 		tx.Commit()
 	}
@@ -75,8 +76,8 @@ func Exception() gin.HandlerFunc {
 			if err := recover(); err != nil {
 				stack := toolkit.Stack(3)
 				httprequest, _ := httputil.DumpRequest(c.Request, false)
-				logger.GetIns().Http("[Recovery] panic recovered:", string(httprequest), err, string(stack[:]))
-				db, _ := c.Get(dbExecutor)
+				logger.L.Http("[Recovery] panic recovered:", string(httprequest), err, string(stack[:]))
+				db, _ := config.X.Get(config.SQLE)
 				tx := interface{}(db).(*orm.DB)
 				tx.Rollback()
 				c.AbortWithStatus(http.StatusInternalServerError)

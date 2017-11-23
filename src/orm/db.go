@@ -53,7 +53,7 @@ func Open(dialect string, args ...interface{}) (db *DB, err error) {
 
 	db = &DB{
 		db:        dbSQL,
-		logger:    logger.NewLogger(),
+		logger:    logger.L,
 		values:    map[string]interface{}{},
 		callbacks: DefaultCallback,
 		dialect:   newDialect(dialect, dbSQL),

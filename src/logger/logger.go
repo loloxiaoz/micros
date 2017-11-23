@@ -9,19 +9,11 @@ const (
 	calldepth = 3
 )
 
-var l Logger
+var L Logger = newLogger()
 
-func GetIns() Logger {
-	if l == nil {
-		l = NewLogger()
-	}
-	return l
-}
-
-func NewLogger() Logger {
+func newLogger() Logger {
 	logFile, _ := os.Create("../debug.log")
-	l = &DefaultLogger{log.New(logFile, "", log.LstdFlags|log.Lshortfile)}
-	return l
+	return &DefaultLogger{log.New(logFile, "", log.LstdFlags|log.Lshortfile)}
 }
 
 type Logger interface {
@@ -49,47 +41,47 @@ type Logger interface {
 }
 
 func SetLogger(logger Logger) {
-	l = logger
+	L = logger
 }
 
 func Debug(v ...interface{}) {
-	l.Debug(v...)
+	L.Debug(v...)
 }
 func Debugf(format string, v ...interface{}) {
-	l.Debugf(format, v...)
+	L.Debugf(format, v...)
 }
 
 func Info(v ...interface{}) {
-	l.Info(v...)
+	L.Info(v...)
 }
 func Infof(format string, v ...interface{}) {
-	l.Infof(format, v...)
+	L.Infof(format, v...)
 }
 
 func Warn(v ...interface{}) {
-	l.Warn(v...)
+	L.Warn(v...)
 }
 func Warnf(format string, v ...interface{}) {
-	l.Warnf(format, v...)
+	L.Warnf(format, v...)
 }
 
 func Error(v ...interface{}) {
-	l.Error(v...)
+	L.Error(v...)
 }
 func Errorf(format string, v ...interface{}) {
-	l.Errorf(format, v...)
+	L.Errorf(format, v...)
 }
 
 func Fatal(v ...interface{}) {
-	l.Fatal(v...)
+	L.Fatal(v...)
 }
 func Fatalf(format string, v ...interface{}) {
-	l.Fatalf(format, v...)
+	L.Fatalf(format, v...)
 }
 
 func Panic(v ...interface{}) {
-	l.Panic(v...)
+	L.Panic(v...)
 }
 func Panicf(format string, v ...interface{}) {
-	l.Panicf(format, v...)
+	L.Panicf(format, v...)
 }
