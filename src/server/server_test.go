@@ -2,7 +2,6 @@ package server
 
 import (
 	"github.com/gin-gonic/gin"
-	"micros/config"
 	"micros/orm"
 	"micros/toolkit"
 	"net/http"
@@ -20,8 +19,7 @@ func execRequest(r http.Handler, method, path string) *httptest.ResponseRecorder
 func TestORM(t *testing.T) {
 	r := NewServer()
 	r.Route.POST("/users", func(c *gin.Context) {
-		db, _ := config.X.Get(config.SQLE)
-		tx := interface{}(db).(*orm.DB)
+		tx := GetCtxDB(c)
 		user := orm.User{Name: "micros 22"}
 		tx.Save(user)
 		c.String(http.StatusOK, "save micros")
@@ -34,8 +32,7 @@ func TestORM(t *testing.T) {
 func TestORMException(t *testing.T) {
 	r := NewServer()
 	r.Route.POST("/users2", func(c *gin.Context) {
-		db, _ := config.X.Get(config.SQLE)
-		tx := interface{}(db).(*orm.DB)
+		tx := GetCtxDB(c)
 		user := orm.User{Name: "micros exception"}
 		tx.Save(user)
 		panic("exception")

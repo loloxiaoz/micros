@@ -35,6 +35,8 @@ func NewServer() *Server {
 	err := registry.DefaultRegistry.Register(service)
 	if err != nil {
 	}
+	db := orm.OpenConnection()
+	config.X.Regist(config.SQLE, db, "init")
 	return server
 }
 
@@ -62,9 +64,9 @@ func StatAfter() gin.HandlerFunc {
 
 func AutoCommit() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		db := orm.OpenConnection()
+		db := GetXBoxDB().New()
 		tx := db.Begin()
-		config.X.Regist(config.SQLE, tx, "autocommit")
+		c.Set(dbExecutor, tx)
 		c.Next()
 		tx.Commit()
 	}
@@ -77,8 +79,7 @@ func Exception() gin.HandlerFunc {
 				stack := toolkit.Stack(3)
 				httprequest, _ := httputil.DumpRequest(c.Request, false)
 				logger.L.Http("[Recovery] panic recovered:", string(httprequest), err, string(stack[:]))
-				db, _ := config.X.Get(config.SQLE)
-				tx := interface{}(db).(*orm.DB)
+				tx := GetCtxDB(c)
 				tx.Rollback()
 				c.AbortWithStatus(http.StatusInternalServerError)
 				flags := map[string]string{
