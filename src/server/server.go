@@ -2,7 +2,6 @@ package server
 
 import (
 	"github.com/gin-gonic/gin"
-	"micros/config"
 	"micros/logger"
 	"micros/monitor"
 	"micros/orm"
@@ -36,7 +35,7 @@ func NewServer() *Server {
 	if err != nil {
 	}
 	db := orm.OpenConnection()
-	config.X.Regist(config.SQLE, db, "init")
+	toolkit.X.Regist(toolkit.SQLE, db, "init")
 	return server
 }
 
@@ -64,11 +63,9 @@ func StatAfter() gin.HandlerFunc {
 
 func AutoCommit() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		db := GetXBoxDB().New()
-		tx := db.Begin()
-		c.Set(dbExecutor, tx)
+		toolkit.BeforeCommit()
 		c.Next()
-		tx.Commit()
+		toolkit.AfterCommit()
 	}
 }
 
@@ -79,8 +76,7 @@ func Exception() gin.HandlerFunc {
 				stack := toolkit.Stack(3)
 				httprequest, _ := httputil.DumpRequest(c.Request, false)
 				logger.L.Http("[Recovery] panic recovered:", string(httprequest), err, string(stack[:]))
-				tx := GetCtxDB(c)
-				tx.Rollback()
+				toolkit.Rollback()
 				c.AbortWithStatus(http.StatusInternalServerError)
 				flags := map[string]string{
 					"endpoint": c.Request.URL.RequestURI(),

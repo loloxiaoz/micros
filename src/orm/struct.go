@@ -171,10 +171,27 @@ func (scope *Scope) GetModelStruct() *ModelStruct {
 							}
 						}
 					}
+				} else if _, ok := field.TagSettings["EMBEDDED"]; ok || fieldStruct.Anonymous {
+					for _, subField := range scope.New(fieldValue).GetModelStruct().StructFields {
+						subField = subField.clone()
+						subField.Names = append([]string{fieldStruct.Name}, subField.Names...)
+						if prefix, ok := field.TagSettings["EMBEDDED_PREFIX"]; ok {
+							subField.DBName = prefix + subField.DBName
+						}
+
+						if subField.IsPrimaryKey {
+							if _, ok := subField.TagSettings["PRIMARY_KEY"]; ok {
+								modelStruct.PrimaryFields = append(modelStruct.PrimaryFields, subField)
+							} else {
+								subField.IsPrimaryKey = false
+							}
+						}
+						modelStruct.StructFields = append(modelStruct.StructFields, subField)
+					}
+					continue
 				}
 				field.IsNormal = true
 			}
-
 			// Even it is ignored, also possible to decode db value into the field
 			if value, ok := field.TagSettings["COLUMN"]; ok {
 				field.DBName = value
