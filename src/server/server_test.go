@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"micros/toolkit"
 	"net/http"
@@ -21,10 +20,18 @@ func (p Person) Echo() string {
 
 func CreatePerson(name string) *Person {
 	person := &Person{Name: name}
-	person.Create()
+	person.InitTime()
 	person.parent = *person
-	person.Save()
+	person.Create()
 	return person
+}
+
+func GetPerson(ID int64) *Person {
+	var person Person
+	pPerson := &person
+	GetByID(person.Echo(), ID, &pPerson)
+	pPerson.parent = pPerson
+	return pPerson
 }
 
 func execRequest(r http.Handler, method, path string) *httptest.ResponseRecorder {
@@ -41,13 +48,13 @@ func TestORM(t *testing.T) {
 	db.CreateTable(&Person{})
 	r.Route.POST("/users", func(c *gin.Context) {
 		person := CreatePerson("micros")
-		person.Name = "luopan"
 		toolkit.CommitAndBegin()
-		person.Update()
-		var person2 Person
-		GetByID(person2.Echo(), person.ID, person2)
-		fmt.Println(person2)
-		person.Del()
+
+		person2 := GetPerson(person.ID)
+		person2.Name = "luopan"
+		person2.Update()
+
+		person2.Del()
 		c.String(http.StatusOK, "save micros")
 	})
 	w1 := execRequest(r.Route, "POST", "/users")

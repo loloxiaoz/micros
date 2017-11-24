@@ -23,16 +23,16 @@ func (xEntity XEntity) Echo() string {
 	return "xentity"
 }
 
-func (x *XEntity) Create() {
+func (x *XEntity) InitTime() {
 	x.ID = toolkit.GenID(1)
 	x.Ver = 1
 	x.CreatedAt = time.Now()
 	x.UpdatedAt = time.Now()
 }
 
-func (x *XEntity) Save() {
+func (x *XEntity) Create() {
 	db := toolkit.GetCtxDB()
-	db.Save(x.parent)
+	db.Create(x.parent)
 }
 
 func (x *XEntity) Update() {

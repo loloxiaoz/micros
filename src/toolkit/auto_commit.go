@@ -1,6 +1,7 @@
 package toolkit
 
 import (
+	"fmt"
 	"micros/orm"
 )
 
@@ -23,7 +24,7 @@ func BeforeCommit() {
 	db = nil
 	ndb := GetXBoxDB().New()
 	db = interface{}(ndb).(*orm.DB)
-	db.Begin()
+	db = db.Begin()
 }
 
 func AfterCommit() {
@@ -32,11 +33,12 @@ func AfterCommit() {
 }
 
 func Rollback() {
+	fmt.Println("roll back")
 	db.Rollback()
 	db = nil
 }
 
 func CommitAndBegin() {
-	db.Commit()
-	db.Begin()
+	AfterCommit()
+	BeforeCommit()
 }
