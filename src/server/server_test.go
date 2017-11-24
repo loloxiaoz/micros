@@ -27,11 +27,10 @@ func CreatePerson(name string) *Person {
 }
 
 func GetPerson(ID int64) *Person {
-	var person Person
-	pPerson := &person
-	GetByID(person.Echo(), ID, &pPerson)
-	pPerson.parent = pPerson
-	return pPerson
+	person := &Person{}
+	GetByID(person.Echo(), ID, person)
+	person.parent = person
+	return person
 }
 
 func execRequest(r http.Handler, method, path string) *httptest.ResponseRecorder {
@@ -52,6 +51,7 @@ func TestORM(t *testing.T) {
 
 		person2 := GetPerson(person.ID)
 		person2.Name = "luopan"
+		person2.Status = true
 		person2.Update()
 
 		person2.Del()
