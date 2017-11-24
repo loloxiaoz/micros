@@ -16,7 +16,7 @@ type XEntity struct {
 	UpdatedAt time.Time
 	DeletedAt *time.Time
 
-	parent Entity `sql:"_"`
+	Parent Entity `sql:"_"`
 }
 
 func (xEntity XEntity) Echo() string {
@@ -32,20 +32,20 @@ func (x *XEntity) InitTime() {
 
 func (x *XEntity) Create() {
 	db := toolkit.GetCtxDB()
-	db.Create(x.parent)
+	db.Create(x.Parent)
 }
 
 func (x *XEntity) Update() {
 	db := toolkit.GetCtxDB()
-	db.Save(x.parent)
+	db.Save(x.Parent)
 }
 
 func (x *XEntity) Del() {
 	db := toolkit.GetCtxDB()
-	db.Delete(x.parent)
+	db.Delete(x.Parent)
 }
 
-func GetByID(table string, ID int64, out interface{}) {
+func GetByID(table string, ID string, out interface{}) {
 	db := toolkit.GetCtxDB()
 	db.Table(table).Where("ID = ?", ID).Find(out)
 }
