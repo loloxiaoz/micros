@@ -16,7 +16,7 @@ type XEntity struct {
 	UpdatedAt time.Time
 	DeletedAt *time.Time
 
-	Parent Entity `sql:"-"`
+	Parent Entity `json:"-" sql:"-"`
 }
 
 func (xEntity XEntity) Echo() string {
