@@ -24,16 +24,18 @@ type Server struct {
 
 func NewServer() *Server {
 	server := new(Server)
+	//handler
 	server.Route = gin.New()
 	server.Route.Use(StatBefore())
 	server.Route.Use(StatAfter())
 	server.Route.Use(Exception())
 	server.Route.Use(AutoCommit())
-	server.Route.GET("/metrics", PrometheusHandler())
+	server.Route.GET("/metrics", prometheusHandler())
+	server.Route.GET("/monitor", monitorHandler())
+	//consul
 	service := &registry.Service{Name: "micros"}
-	err := registry.DefaultRegistry.Register(service)
-	if err != nil {
-	}
+	registry.DefaultRegistry.Register(service)
+	//db
 	db := orm.OpenConnection()
 	toolkit.X.Regist(toolkit.SQLE, db, "init")
 	return server
