@@ -21,7 +21,7 @@ func (p Person) Echo() string {
 func CreatePerson(name string) *Person {
 	person := &Person{Name: name}
 	person.InitTime()
-	person.Parent = *person
+	person.parent = *person
 	person.Create()
 	return person
 }
@@ -29,7 +29,7 @@ func CreatePerson(name string) *Person {
 func GetPerson(ID int64) *Person {
 	person := &Person{}
 	GetByID(person.Echo(), ID, person)
-	person.Parent = person
+	person.parent = person
 	return person
 }
 
