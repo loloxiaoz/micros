@@ -1,6 +1,7 @@
 package server
 
 import (
+	//	"fmt"
 	"github.com/gin-gonic/gin"
 	"micros/logger"
 	"micros/monitor"
@@ -13,16 +14,15 @@ import (
 )
 
 const (
-	beginTime  = "beginTime"
-	endTime    = "endTime"
-	dbExecutor = "dbExecutor"
+	beginTime = "beginTime"
+	endTime   = "endTime"
 )
 
 type Server struct {
 	Route *gin.Engine
 }
 
-func NewServer() *Server {
+func NewServer(name string) *Server {
 	server := new(Server)
 	//handler
 	server.Route = gin.New()
@@ -30,11 +30,13 @@ func NewServer() *Server {
 	server.Route.Use(StatAfter())
 	server.Route.Use(Exception())
 	server.Route.Use(AutoCommit())
+	//prometheus
 	server.Route.GET("/metrics", prometheusHandler())
-	server.Route.GET("/monitor", monitorHandler())
 	//consul
-	service := &registry.Service{Name: "micros"}
-	registry.DefaultRegistry.Register(service)
+	server.Route.GET("/monitor", monitorHandler())
+	node := &registry.Node{Id: "1", Address: "127.0.0.1", Port: 8080}
+	service := &registry.Service{Name: name, Nodes: []*registry.Node{node}}
+	registry.DefaultRegistry.Register(service, registry.RegisterTTL(time.Minute*5))
 	//db
 	db := orm.OpenConnection()
 	toolkit.X.Regist(toolkit.SQLE, db, "init")
@@ -56,6 +58,7 @@ func StatAfter() gin.HandlerFunc {
 			ret, _ := c.Get(beginTime)
 			bTime := ret.(int64)
 			timeCost := curTime - bTime
+			//prometheus
 			monitor.HttpUrlStat.WithLabelValues("200", c.Request.URL.RequestURI()).Add(1)
 			monitor.HttpTimeStat.WithLabelValues(c.Request.URL.RequestURI()).Observe(float64(timeCost))
 		}()
@@ -75,11 +78,14 @@ func Exception() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
 			if err := recover(); err != nil {
+				//log
 				stack := toolkit.Stack(3)
 				httprequest, _ := httputil.DumpRequest(c.Request, false)
 				logger.L.Http("[Recovery] panic recovered:", string(httprequest), err, string(stack[:]))
+				//db
 				toolkit.Rollback()
 				c.AbortWithStatus(http.StatusInternalServerError)
+				//sentry
 				flags := map[string]string{
 					"endpoint": c.Request.URL.RequestURI(),
 				}

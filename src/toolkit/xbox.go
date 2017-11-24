@@ -5,8 +5,9 @@ import (
 )
 
 const (
-	ROUTER = "router"
-	SQLE   = "sqlExecuter"
+	ROUTER  = "router"
+	SQLE    = "sqlExecuter"
+	SERVICE = "service"
 )
 
 var (

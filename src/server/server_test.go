@@ -41,7 +41,7 @@ func execRequest(r http.Handler, method, path string) *httptest.ResponseRecorder
 }
 
 func TestORM(t *testing.T) {
-	r := NewServer()
+	r := NewServer("micros")
 	db := toolkit.GetXBoxDB()
 	db.DropTable(&Person{})
 	db.CreateTable(&Person{})
@@ -63,7 +63,7 @@ func TestORM(t *testing.T) {
 }
 
 //func TestORMException(t *testing.T) {
-//	r := NewServer()
+//	r := NewServer("micros")
 //	r.Route.POST("/users2", func(c *gin.Context) {
 //		person := Person{Name: "micros exception"}
 //		person.Save()
