@@ -2,7 +2,7 @@ package toolkit
 
 import (
 	"fmt"
-	"micros/orm"
+	"github.com/micros/orm"
 )
 
 var db *orm.DB

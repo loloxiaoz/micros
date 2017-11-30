@@ -12,7 +12,7 @@ import (
 	"sync"
 
 	"github.com/beego/goyaml2"
-	"micros/config"
+	"github.com/micros/config"
 )
 
 // Config is a yaml config parser and implements Config interface.

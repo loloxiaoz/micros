@@ -1,7 +1,7 @@
 package orm
 
 import (
-	"micros/logger"
+	"github.com/micros/logger"
 )
 
 // DefaultCallback default callbacks defined by orm

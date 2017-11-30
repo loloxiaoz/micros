@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
-	"micros/logger"
+	"github.com/micros/logger"
 	"os"
 	"reflect"
 	"strings"

@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"micros/config"
+	"github.com/micros/config"
 )
 
 func TestYaml(t *testing.T) {
