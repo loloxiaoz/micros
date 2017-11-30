@@ -1,4 +1,0 @@
-vendor/*
-.yaml_test.go.swp
-*/*.log
-*.log
