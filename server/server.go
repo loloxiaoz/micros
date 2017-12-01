@@ -11,9 +11,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/micros/config"
 	"github.com/micros/logger"
-	"github.com/micros/monitor"
+	//	"github.com/micros/monitor"
 	"github.com/micros/orm"
-	"github.com/micros/registry"
+	//	"github.com/micros/registry"
 	"github.com/micros/toolkit"
 )
 
