@@ -34,6 +34,7 @@ func NewServer(name, configPath string) *Server {
 	server.Route.Use(StatBefore())
 	server.Route.Use(StatAfter())
 	server.Route.Use(Exception())
+	server.Route.Use(AutoCommit())
 	//prometheus
 	//	server.Route.GET("/metrics", prometheusHandler())
 	//	//consul
@@ -62,11 +63,20 @@ func StatAfter() gin.HandlerFunc {
 			ret, _ := c.Get(beginTime)
 			bTime := ret.(int64)
 			timeCost := curTime - bTime
+			fmt.Println(timeCost)
 			//prometheus
 			//			monitor.HttpUrlStat.WithLabelValues("200", c.Request.URL.RequestURI()).Add(1)
 			//			monitor.HttpTimeStat.WithLabelValues(c.Request.URL.RequestURI()).Observe(float64(timeCost))
 		}()
 		c.Next()
+	}
+}
+
+func AutoCommit() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		toolkit.BeforeCommit()
+		c.Next()
+		toolkit.AfterCommit()
 	}
 }
 
