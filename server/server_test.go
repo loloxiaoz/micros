@@ -41,7 +41,7 @@ func execRequest(r http.Handler, method, path string) *httptest.ResponseRecorder
 }
 
 func TestORM(t *testing.T) {
-	r := NewServer("micros")
+	r := NewServer("micros", "../config.yaml")
 	db := toolkit.GetXBoxDB()
 	db.DropTable(&Person{})
 	db.CreateTable(&Person{})

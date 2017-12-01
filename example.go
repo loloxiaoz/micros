@@ -5,5 +5,7 @@ import (
 )
 
 func main() {
-	server.NewServer("hero")
+	prjName := "example"
+	configPath := "./config.yaml"
+	server.NewServer(prjName, configPath)
 }

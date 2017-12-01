@@ -4,12 +4,12 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/micros/logger"
-	"os"
 	"reflect"
 	"strings"
 	"time"
+
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/micros/logger"
 )
 
 // DB contains information for current db connection
@@ -590,23 +590,4 @@ func (s *DB) slog(sql string, t time.Time, vars ...interface{}) {
 		sql = strings.Replace(sql, "?", str, 1)
 	}
 	s.logger.Sql(fileWithLineNum()+" ", sql+" [", NowFunc().Sub(t), "] [", s.RowsAffected, "]")
-}
-
-//todo add config
-func OpenConnection() (db *DB) {
-
-	//	dbhost := os.Getenv("micros_DBADDRESS")
-	//todo  修改读配置
-	dbhost := "127.0.0.1:3306"
-	dbhost = fmt.Sprintf("tcp(%v)", dbhost)
-	db, err := Open("mysql", fmt.Sprintf("root:@%v/micros?charset=utf8&parseTime=True", dbhost))
-	if err != nil {
-		panic("can't not open connection," + err.Error())
-	}
-
-	if os.Getenv("DEBUG") == "true" {
-		db.LogMode(true)
-	}
-	db.DB().SetMaxIdleConns(10)
-	return
 }

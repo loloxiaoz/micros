@@ -7,6 +7,8 @@ import (
 	"time"
 )
 
+var App Configer
+
 // Configer defines how to get and set value from configuration raw data.
 type Configer interface {
 	Set(key, val string) error   //support section::key type in given key when using ini type.
