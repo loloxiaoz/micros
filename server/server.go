@@ -18,6 +18,7 @@ import (
 )
 
 const (
+	REQID     = "reqID"
 	beginTime = "beginTime"
 	endTime   = "endTime"
 )
@@ -52,6 +53,9 @@ func StatBefore() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		curTime := time.Now().UnixNano() / 1000000
 		c.Set(beginTime, curTime)
+		reqID := toolkit.GenID(1)
+		c.Set(REQID, reqID)
+		logger.L.Http("[Start] reqID:", reqID, " "+c.Request.URL.RequestURI())
 	}
 }
 
@@ -63,7 +67,8 @@ func StatAfter() gin.HandlerFunc {
 			ret, _ := c.Get(beginTime)
 			bTime := ret.(int64)
 			timeCost := curTime - bTime
-			fmt.Println(timeCost)
+			reqID, _ := c.Get(REQID)
+			logger.L.Http("[End] reqID:", reqID, " "+c.Request.URL.RequestURI(), " time cost :", timeCost)
 			//prometheus
 			//			monitor.HttpUrlStat.WithLabelValues("200", c.Request.URL.RequestURI()).Add(1)
 			//			monitor.HttpTimeStat.WithLabelValues(c.Request.URL.RequestURI()).Observe(float64(timeCost))
