@@ -1,14 +1,19 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httputil"
 	"time"
 
+	"micros/internal/controller"
 	"micros/internal/monitor"
 	"micros/pkg/logger"
 	"micros/pkg/registry"
 	"micros/pkg/toolkit"
+
+	swaggerfiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 
 	"github.com/gin-gonic/gin"
 )
@@ -19,26 +24,39 @@ const (
 )
 
 type Server struct {
-	Route *gin.Engine
+	r *gin.Engine
 }
 
 func NewServer(name string) *Server {
 	server := new(Server)
 	//handler
-	server.Route = gin.New()
-	server.Route.Use(StatBefore())
-	server.Route.Use(StatAfter())
-	server.Route.Use(Exception())
-	server.Route.Use(AutoCommit())
+	server.r = gin.New()
+	server.r.Use(StatBefore())
+	server.r.Use(StatAfter())
+	server.r.Use(Exception())
+	server.r.Use(AutoCommit())
 	//prometheus
-	server.Route.GET("/metrics", prometheusHandler())
+	server.r.GET("/metrics", prometheusHandler())
 	//consul
-	server.Route.GET("/monitor", monitorHandler())
+	server.r.GET("/monitor", monitorHandler())
+	//swagger
+	server.r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+	//apis
+	server.r.GET("/hello", controller.Helloworld)
+
+	//service discovery
 	node := &registry.Node{Id: "1", Address: "127.0.0.1", Port: 8080}
 	service := &registry.Service{Name: name, Nodes: []*registry.Node{node}}
 	registry.DefaultRegistry.Register(service, registry.RegisterTTL(time.Minute*5))
-	//db
 	return server
+}
+
+func (s *Server) Run() {
+	fmt.Printf("enter run ")
+	err := s.r.Run(":8090")
+	if (err!=nil) {
+		fmt.Printf("err is %v", err)
+	}
 }
 
 func StatBefore() gin.HandlerFunc {

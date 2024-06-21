@@ -7,5 +7,6 @@ import (
 
 func main() {
 	common.PrintVersion()
-	server.NewServer("hero")
+	s := server.NewServer("hero")
+	s.Run()
 }
