@@ -6,6 +6,7 @@ import (
 	"net/http/httputil"
 	"time"
 
+	"micros/api"
 	"micros/internal/controller"
 	"micros/internal/monitor"
 	"micros/pkg/logger"
@@ -40,6 +41,8 @@ func NewServer(name string) *Server {
 	//consul
 	server.r.GET("/monitor", monitorHandler())
 	//swagger
+	api.SwaggerInfo.BasePath = "/api/v1"
+
 	server.r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	//apis
 	server.r.GET("/hello", controller.Helloworld)
@@ -52,7 +55,6 @@ func NewServer(name string) *Server {
 }
 
 func (s *Server) Run() {
-	fmt.Printf("enter run ")
 	err := s.r.Run(":8090")
 	if (err!=nil) {
 		fmt.Printf("err is %v", err)

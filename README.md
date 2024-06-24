@@ -4,7 +4,7 @@
 
 ## todo
 
-- [ ] api文档生成 https://github.com/swaggo/gin-swagger
+- [ ] api文档生成 [gin](https://github.com/swaggo/gin-swagger)
 
 ```shell
 swag init -g ./cmd/server/main.go  -o api
