@@ -1,0 +1,29 @@
+version: '3.8'
+services:
+  redis:
+    image: docker.af-biz.qianxin-inc.cn/redis:5.0.8
+    ports:
+      - "6379:6379"
+    networks:
+      - backend
+
+  mysql:
+    image: docker.af-biz.qianxin-inc.cn/mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: mysql@123456
+      MYSQL_DATABASE: demo
+      MYSQL_USER: mysql
+      MYSQL_PASSWORD: mysql@123456
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - backend
+
+networks:
+  backend:
+
+volumes:
+  mysql_data:
