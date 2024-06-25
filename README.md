@@ -16,3 +16,4 @@ swag init -g ./cmd/server/main.go  -o api
 - [ ] 数据库
 - [ ] gitbook文档生成
 - [ ] 云原生
+- [ ] 配置文件开关
