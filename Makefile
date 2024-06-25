@@ -19,12 +19,17 @@ BUILDPATH=build
 BINPATH=$(BUILDPATH)
 
 FLAGS =  -tags netgo -ldflags='-X "$(IMPORT_PATH)/common.Version=$(VERSION)" -X "$(IMPORT_PATH)/common.BuildTime=$(TIME)" -X "$(IMPORT_PATH)/common.Branch=$(BRANCH)" -X "$(IMPORT_PATH)/common.CommitId=$(COMMITID)" -X "$(IMPORT_PATH)/common.CommitDate=$(COMMITDATE)" -X "$(IMPORT_PATH)/common.GoVersion=$(GOVERSION)"'
+TAG = "unknown"
 
-all: test build
+all: test build tag
 
 .PHONY: build
 build:
 	@$(GOBUILD) $(FLAGS) -o $(BINPATH)/$(PROJECT) cmd/server/main.go  
+
+.PHONY: tag
+tag:
+	@docker build -f Dockerfile -t micros:$(TAG) --platform=linux/amd64 --provenance=false --sbom=false . --load
 
 .PHONY: test   
 test:
