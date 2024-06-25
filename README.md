@@ -11,6 +11,7 @@ swag init -g ./cmd/server/main.go  -o api
 ```
 
 - [x] docker-compose
+- [x] config 库
 - [ ] 可观测性
 - [ ] orm
 - [ ] 数据库

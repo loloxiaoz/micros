@@ -28,6 +28,7 @@ build:
 
 .PHONY: test   
 test:
+	cp -f configs/conf_dev.ini configs/conf.ini
 	go test ./... -parallel=1  -timeout=30m -v
 
 .PHONY: clean
