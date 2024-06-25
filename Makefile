@@ -23,8 +23,12 @@ TAG = "unknown"
 
 all: test build tag
 
+.PHONY: api
+api:
+	swag init -g ./cmd/server/main.go  -o api
+
 .PHONY: build
-build:
+build: api
 	@$(GOBUILD) $(FLAGS) -o $(BINPATH)/$(PROJECT) cmd/server/main.go  
 
 .PHONY: tag

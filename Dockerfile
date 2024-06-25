@@ -21,4 +21,4 @@ COPY --from=builder /go/release/build/* ./
 
 EXPOSE 8090/tcp
 
-CMD ["./server", "-env", "fat"]
+CMD ["./micros", "-env", "fat"]
