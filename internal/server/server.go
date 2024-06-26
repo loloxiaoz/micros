@@ -2,16 +2,11 @@ package server
 
 import (
 	"fmt"
-	"net/http"
-	"net/http/httputil"
 	"time"
 
 	"micros/api"
 	"micros/internal/controller"
-	"micros/internal/monitor"
-	"micros/pkg/logger"
 	"micros/pkg/registry"
-	"micros/pkg/toolkit"
 
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -24,22 +19,22 @@ const (
 	endTime   = "endTime"
 )
 
+//Server 服务
 type Server struct {
 	r *gin.Engine
 }
 
+//NewServer 新建http服务
 func NewServer(name string) *Server {
 	server := new(Server)
 	//handler
 	server.r = gin.New()
-	server.r.Use(StatBefore())
-	server.r.Use(StatAfter())
-	server.r.Use(Exception())
-	server.r.Use(AutoCommit())
+	server.r.Use(statBefore())
+	server.r.Use(statAfter())
 	//prometheus
-	server.r.GET("/metrics", prometheusHandler())
-	//consul
-	server.r.GET("/monitor", monitorHandler())
+	server.r.GET("/system/metrics", prometheusHandler())
+	//health
+	server.r.GET("/system/health", healthHandler())
 	//swagger
 	api.SwaggerInfo.BasePath = "/api/v1"
 
@@ -54,6 +49,7 @@ func NewServer(name string) *Server {
 	return server
 }
 
+//Run 运行http服务
 func (s *Server) Run() {
 	err := s.r.Run(":8090")
 	if (err!=nil) {
@@ -61,55 +57,16 @@ func (s *Server) Run() {
 	}
 }
 
-func StatBefore() gin.HandlerFunc {
+func statBefore() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		curTime := time.Now().UnixNano() / 1000000
 		c.Set(beginTime, curTime)
 	}
 }
 
-func StatAfter() gin.HandlerFunc {
+func statAfter() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
-			curTime := time.Now().UnixNano() / 1000000
-			c.Set(endTime, curTime)
-			ret, _ := c.Get(beginTime)
-			bTime := ret.(int64)
-			timeCost := curTime - bTime
-			//prometheus
-			monitor.HttpUrlStat.WithLabelValues("200", c.Request.URL.RequestURI()).Add(1)
-			monitor.HttpTimeStat.WithLabelValues(c.Request.URL.RequestURI()).Observe(float64(timeCost))
-		}()
-		c.Next()
-	}
-}
-
-func AutoCommit() gin.HandlerFunc {
-	return func(c *gin.Context) {
-//		toolkit.BeforeCommit()
-		c.Next()
-//		toolkit.AfterCommit()
-	}
-}
-
-func Exception() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		defer func() {
-			if err := recover(); err != nil {
-				//log
-				stack := toolkit.Stack(3)
-				httprequest, _ := httputil.DumpRequest(c.Request, false)
-				logger.L.Http("[Recovery] panic recovered:", string(httprequest), err, string(stack[:]))
-				//db
-//				toolkit.Rollback()
-				c.AbortWithStatus(http.StatusInternalServerError)
-				//sentry
-				flags := map[string]string{
-					"endpoint": c.Request.URL.RequestURI(),
-				}
-//				monitor.Report(flags, err, c.Errors)
-				monitor.Report(flags, err)
-			}
 		}()
 		c.Next()
 	}
