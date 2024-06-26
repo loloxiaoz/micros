@@ -6,9 +6,6 @@ import (
 	"github.com/gookit/config/v2/yaml"
 )
 
-
-var conf Conf
-
 //Conf 全部配置
 type Conf struct {
 	DB `json:"DB"`
@@ -17,8 +14,8 @@ type Conf struct {
 	Project string `json:"project"`
 }
 
-//Init 初始化
-func (conf *Conf) Init(path ...string) {
+//New 创建conf
+func New(path ...string) (*Conf)  {
 	// 支持ENV变量解析
 	config.WithOptions(config.ParseEnv)
 	config.WithOptions(func(opt *config.Options) {
@@ -34,7 +31,9 @@ func (conf *Conf) Init(path ...string) {
 	if err != nil {
 		panic(err)
 	}
+	var conf Conf
 	config.Decode(&conf)
+	return &conf
 }
 
 //IsAPIDoc 是否开启api文档
