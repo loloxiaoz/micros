@@ -4,6 +4,7 @@ go 1.22
 
 require (
 	github.com/fatih/color v1.17.0
+	github.com/gin-contrib/pprof v1.5.0
 	github.com/gin-gonic/gin v1.10.0
 	github.com/gookit/config/v2 v2.2.5
 	github.com/hashicorp/consul/api v1.29.1

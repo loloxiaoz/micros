@@ -23,3 +23,11 @@ type Log struct {
 	Retention int `json:"retention"`
 }
 
+//Opt 选项配置
+type Opt struct {
+	APIDoc string `json:"apiDoc"`
+	Profile string `json:"profile"`
+	Monitor string 	`json:"monitor"`
+	Trace string `json:"trace"`
+	Stat string `json:"stat"`
+}

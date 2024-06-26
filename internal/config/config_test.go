@@ -16,5 +16,6 @@ func TestConfig(t *testing.T) {
 	conf.Init(dir + "configs/conf.ini", dir + "configs/conf.yaml")
 	assert.Equal(t, "mysql", conf.DB.DBType)
 	assert.Equal(t, "DEBUG", conf.Log.Level)
+	assert.Equal(t, "true", conf.Opt.Profile)
 	assert.Equal(t, "micros", conf.Project)
 }

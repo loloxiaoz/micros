@@ -11,6 +11,7 @@ import (
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
+	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 )
 
@@ -21,26 +22,26 @@ const (
 
 //Server 服务
 type Server struct {
-	r *gin.Engine
+	engine *gin.Engine
 }
 
 //NewServer 新建http服务
 func NewServer(name string) *Server {
 	server := new(Server)
 	//handler
-	server.r = gin.New()
-	server.r.Use(statBefore())
-	server.r.Use(statAfter())
+	server.engine = gin.New()
+	server.engine.Use(statBefore())
+	server.engine.Use(statAfter())
 	//prometheus
-	server.r.GET("/system/metrics", prometheusHandler())
+	server.engine.GET("/system/metrics", prometheusHandler())
 	//health
-	server.r.GET("/system/health", healthHandler())
+	server.engine.GET("/system/health", healthHandler())
 	//swagger
 	api.SwaggerInfo.BasePath = "/api/v1"
 
-	server.r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+	server.engine .GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	//apis
-	server.r.GET("/hello", controller.Helloworld)
+	server.engine.GET("/hello", controller.Helloworld)
 
 	//service discovery
 	node := &registry.Node{Id: "1", Address: "127.0.0.1", Port: 8080}
@@ -49,9 +50,15 @@ func NewServer(name string) *Server {
 	return server
 }
 
+func (s *Server) assemble() {
+	pprof.Register(s.engine) // register pprof to gin
+
+
+}
+
 //Run 运行http服务
 func (s *Server) Run() {
-	err := s.r.Run(":8090")
+	err := s.engine.Run(":8090")
 	if (err!=nil) {
 		fmt.Printf("err is %v", err)
 	}

@@ -13,6 +13,7 @@ var conf Conf
 type Conf struct {
 	DB `json:"DB"`
 	Log `json:"Log"`
+	Opt `json:"Opt"`
 	Project string `json:"project"`
 }
 
@@ -34,4 +35,29 @@ func (conf *Conf) Init(path ...string) {
 		panic(err)
 	}
 	config.Decode(&conf)
+}
+
+//IsAPIDoc 是否开启api文档
+func (conf *Conf) IsAPIDoc() bool {
+	return conf.Opt.APIDoc == "true"
+}
+
+//IsProfile 是否开启profile
+func (conf *Conf) IsProfile() bool {
+	return conf.Opt.Profile == "true"
+}
+
+//IsMonitor 是否开启监控
+func (conf *Conf) IsMonitor() bool {
+	return conf.Opt.Monitor == "true"
+}
+
+//IsTrace 是否开启trace
+func (conf *Conf) IsTrace() bool {
+	return conf.Opt.Trace == "true"
+}
+
+//IsStat 是否开启统计
+func (conf *Conf) IsStat() bool {
+	return conf.Opt.Stat == "true"
 }
