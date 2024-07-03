@@ -21,7 +21,6 @@
 ## 启动命令
 
 ```shell
-swag init -g ./cmd/server/main.go  -o api
 make build
 docker run -d -p 8090:8090   micros:unknown
 ```

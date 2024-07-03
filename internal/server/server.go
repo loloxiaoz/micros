@@ -35,14 +35,14 @@ func NewServer(conf *config.Conf) *Server {
 	server.engine = gin.New()
 
 	//assemble
-	server.assemble()
+	v1 := server.engine.Group("api/v1")
+	server.assemble(v1)
+	v1.GET("/system/health", controller.Health)
+	v1.GET("/example/hello", controller.Helloworld)
 
+	//middleware
 	server.engine.Use(statBefore())
 	server.engine.Use(statAfter())
-
-	//apis
-	server.engine.GET("/system/health", healthHandler())
-	server.engine.GET("/hello", controller.Helloworld)
 
 	//service discovery
 	node := &registry.Node{Id: "1", Address: "127.0.0.1", Port: 8080}
@@ -51,11 +51,11 @@ func NewServer(conf *config.Conf) *Server {
 	return server
 }
 
-func (s *Server) assemble() {
+func (s *Server) assemble(group *gin.RouterGroup) {
 	//apiDoc switch
 	if s.conf.IsAPIDoc() {
 		api.SwaggerInfo.BasePath = "/api/v1"
-		s.engine.GET("/swagger/*any", ginSwagger.WrapHandler(fileSwagger.Handler))
+		group.GET("/swagger/*any", ginSwagger.WrapHandler(fileSwagger.Handler))
 	}
 	//profile switch
 	if s.conf.IsProfile() {
@@ -63,7 +63,7 @@ func (s *Server) assemble() {
 	}
 	//monitor switch
 	if s.conf.IsMonitor() {
-		s.engine.GET("/system/metrics", prometheusHandler())
+		group.GET("/system/monitor", controller.Monitor)
 	}
 
 }

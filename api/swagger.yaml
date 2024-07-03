@@ -1,7 +1,7 @@
 info:
   contact: {}
 paths:
-  /example/helloworld:
+  /example/hello:
     get:
       consumes:
       - application/json
@@ -14,6 +14,36 @@ paths:
           schema:
             type: string
       summary: ping example
+      tags:
+      - example
+  /system/health:
+    get:
+      consumes:
+      - application/json
+      description: do ping
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: health check
+      tags:
+      - example
+  /system/monitor:
+    get:
+      consumes:
+      - application/json
+      description: do ping
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: monitor
       tags:
       - example
 swagger: "2.0"
