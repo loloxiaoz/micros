@@ -26,10 +26,6 @@ type DB struct {
 type Log struct {
 	Path         string `json:"path"`
 	Level        string `json:"level"`
-	RotateSize   string `json:"rotateSize"`
-	RotateHourly string `json:"rotateHourly"`
-	Rotate       string `json:"rotate"`
-	Retention    int    `json:"retention"`
 }
 
 // Opt 选项配置

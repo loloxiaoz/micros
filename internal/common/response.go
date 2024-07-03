@@ -1,6 +1,9 @@
 package common
 
-import "time"
+import (
+	"time"
+)
+
 
 type response struct {
 	Time    time.Time   `json:"time"`
@@ -16,8 +19,7 @@ func Success(v interface{}) interface{} {
 }
 
 // Error 失败
-func Error(err error) interface{} {
-	//ret := response{Stat: 0, Code: err.Code, Message: e.Message, Data: e.Info}
-	//	return ret
-	return ""
+func Error(bizError string, err error) interface{} {
+	bizCode := ErrCodeMap[bizError]
+	return response{Stat: 0, Code: bizCode, Message: bizError, Data: err.Error()}
 }

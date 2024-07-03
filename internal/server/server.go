@@ -43,6 +43,7 @@ func New(conf *config.Conf) *Server {
 	//middleware
 	server.engine.Use(statBefore())
 	server.engine.Use(statAfter())
+	server.engine.Use(logHandler())
 
 	//service discovery
 	node := &registry.Node{Id: "1", Address: "127.0.0.1", Port: 8080}
