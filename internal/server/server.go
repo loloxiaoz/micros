@@ -27,8 +27,8 @@ type Server struct {
 	conf *config.Conf
 }
 
-//NewServer 新建http服务
-func NewServer(conf *config.Conf) *Server {
+//New 新建http服务
+func New(conf *config.Conf) *Server {
 	server := new(Server)
 	//conf
 	server.conf = conf
@@ -70,7 +70,7 @@ func (s *Server) assemble(group *gin.RouterGroup) {
 
 //Run 运行http服务
 func (s *Server) Run() {
-	err := s.engine.Run(":8090")
+	err := s.engine.Run(s.conf.Addr)
 	if (err!=nil) {
 		fmt.Printf("err is %v", err)
 	}

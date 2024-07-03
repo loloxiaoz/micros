@@ -47,4 +47,5 @@ clean:
 
 .PHONY: run
 run:
-	@CGO_ENABLE=0 GOOS=darwin GOARCH=amd64 $(GORUN) $(FLAGS) cmd/server/main.go --config configs/conf.json
+	cp -f configs/conf_dev.ini configs/conf.ini
+	@CGO_ENABLE=0 GOOS=darwin GOARCH=amd64 $(GORUN) $(FLAGS) cmd/server/main.go 

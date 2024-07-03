@@ -10,12 +10,13 @@ import (
 func main() {
 	common.PrintVersion()
 	//flags
-	dir := os.Getenv("GOPATH") + "/src/micros/configs/conf.ini"
+	initDir := os.Getenv("GOPATH") + "/src/micros/configs/conf.ini"
+	yamlDir := os.Getenv("GOPATH") + "/src/micros/configs/conf.yaml"
 
 	//config
-	conf := config.New(dir)
+	conf := config.New(initDir, yamlDir)
 
 	//server
-	s := server.NewServer(conf)
+	s := server.New(conf)
 	s.Run()
 }

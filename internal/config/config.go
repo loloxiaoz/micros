@@ -8,6 +8,7 @@ import (
 
 //Conf 全部配置
 type Conf struct {
+	Server `json:"Server"`
 	DB `json:"DB"`
 	Log `json:"Log"`
 	Opt `json:"Opt"`

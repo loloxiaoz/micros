@@ -1,5 +1,14 @@
 package config
 
+//Server 配置
+type Server struct {
+	Mode string `json:"mode"`
+	Addr string `json:"addr"`
+	Grace string `json:"grace"`
+	ReadTimeout string `json:"readTimeout"`
+	WriteTimeout string `json:"writeTimeout"`
+}
+
 //DB 数据库配置
 type DB struct {
 	DBType      string `json:"dbType"`
