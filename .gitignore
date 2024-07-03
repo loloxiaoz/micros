@@ -444,3 +444,4 @@ FodyWeavers.xsd
 go.sum
 bin
 build
+.vscode
