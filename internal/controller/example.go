@@ -19,7 +19,6 @@ import (
 // @Produce json
 // @Success 200 {string} Hello
 // @Router /example/hello [get]
-func Helloworld(ctx *gin.Context)  {
+func Helloworld(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, common.Success("hello world"))
- }
- 
+}

@@ -19,7 +19,7 @@ var (
 	GoVersion string
 )
 
-//PrintVersion 打印版本信息
+// PrintVersion 打印版本信息
 func PrintVersion() {
 	fmt.Printf("version: %s\n", Version)
 	fmt.Printf("buildTime: %s\n", BuildTime)

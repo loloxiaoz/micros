@@ -162,7 +162,7 @@ func (c *consulRegistry) Register(s *Service, opts ...RegisterOption) error {
 		}
 
 		check = &consul.AgentServiceCheck{
-			TTL: fmt.Sprintf("%v", options.TTL),
+			TTL:                            fmt.Sprintf("%v", options.TTL),
 			DeregisterCriticalServiceAfter: fmt.Sprintf("%v", deregTTL),
 		}
 	}

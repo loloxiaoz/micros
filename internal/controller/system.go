@@ -20,10 +20,9 @@ import (
 // @Produce json
 // @Success 200 {string} Health
 // @Router /system/health [get]
-func Health(ctx *gin.Context){
-		ctx.JSON(http.StatusOK, common.Success(ctx.Request.Host))
+func Health(ctx *gin.Context) {
+	ctx.JSON(http.StatusOK, common.Success(ctx.Request.Host))
 }
-
 
 // @BasePath /api/v1
 
