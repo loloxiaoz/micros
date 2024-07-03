@@ -34,16 +34,16 @@ func New(conf *config.Conf) *Server {
 	server.conf = conf
 	server.engine = gin.New()
 
+	//middleware
+	server.engine.Use(statBefore())
+	server.engine.Use(statAfter())
+	server.engine.Use(logHandler())
+
 	//assemble
 	v1 := server.engine.Group("api/v1")
 	server.assemble(v1)
 	v1.GET("/system/health", controller.Health)
 	v1.GET("/example/hello", controller.Helloworld)
-
-	//middleware
-	server.engine.Use(statBefore())
-	server.engine.Use(statAfter())
-	server.engine.Use(logHandler())
 
 	//service discovery
 	node := &registry.Node{Id: "1", Address: "127.0.0.1", Port: 8080}
