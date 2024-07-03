@@ -17,7 +17,8 @@ import (
 )
 
 var (
-	logFilePath = "./logs/access"
+	logFilePath = "./logs/access" 
+	logFileName = "./logs/access.log"
 )
 
 	func logHandler()  gin.HandlerFunc  {
@@ -28,7 +29,7 @@ var (
 		// 设置 rotatelogs
 		logWriter, _ := rotatelogs.New(
 			logFilePath+".%Y%m%d.log",
-			rotatelogs.WithLinkName(logFilePath),
+			rotatelogs.WithLinkName(logFileName),
 			rotatelogs.WithMaxAge(30*24*time.Hour),
 			rotatelogs.WithRotationTime(24*time.Hour),
 		)
