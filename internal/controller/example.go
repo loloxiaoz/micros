@@ -3,6 +3,8 @@ package controller
 import (
 	"net/http"
 
+	"micros/internal/common"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,6 +20,6 @@ import (
 // @Success 200 {string} Hello
 // @Router /example/hello [get]
 func Helloworld(ctx *gin.Context)  {
-	ctx.JSON(http.StatusOK,"hello world")
+	ctx.JSON(http.StatusOK, common.Success("hello world"))
  }
  

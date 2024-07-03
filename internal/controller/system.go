@@ -2,7 +2,8 @@ package controller
 
 import (
 	"net/http"
-	"time"
+
+	"micros/internal/common"
 
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -20,17 +21,7 @@ import (
 // @Success 200 {string} Health
 // @Router /system/health [get]
 func Health(ctx *gin.Context){
-		resp := &struct {
-			Timestamp   time.Time `json:"timestamp"`
-			Environment string    `json:"environment"`
-			Host        string    `json:"host"`
-			Status      string    `json:"status"`
-		}{
-			Timestamp:   time.Now(),
-			Host:        ctx.Request.Host,
-			Status:      "ok",
-		}
-		ctx.JSON(http.StatusOK, resp)
+		ctx.JSON(http.StatusOK, common.Success(ctx.Request.Host))
 }
 
 
@@ -47,6 +38,5 @@ func Health(ctx *gin.Context){
 // @Router /system/monitor [get]
 func Monitor(ctx *gin.Context) {
 	h := promhttp.Handler()
-		h.ServeHTTP(ctx.Writer, ctx.Request)
-	
+	h.ServeHTTP(ctx.Writer, ctx.Request)
 }
