@@ -6,5 +6,5 @@ import "gorm.io/gorm"
 type Student struct {
 	gorm.Model
 	Name string `gorm:"index"`
-	Age int `json:"age"`
+	Age  int    `json:"age"`
 }

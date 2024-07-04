@@ -6,9 +6,9 @@ import (
 	"micros/pkg/toolkit"
 )
 
-//CreateStudent 创建学生
+// CreateStudent 创建学生
 func CreateStudent(student *model.Student) error {
 	student.ID = toolkit.GenID(1)
-	result := db.Instance().Create(&student) 
+	result := db.Instance().Create(&student)
 	return result.Error
 }

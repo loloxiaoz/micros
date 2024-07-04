@@ -12,7 +12,7 @@ const SEQ_BIT_VALUE = 1 << 18
 var seq int64 = 0
 
 // GenID 生成ID
-func GenID(instance int) uint{
+func GenID(instance int) uint {
 	uuid := time.Now().Unix()
 	uuid -= ID_OFFSET
 	uuid <<= INSTANCE_SEQ_BIT_LENGTH

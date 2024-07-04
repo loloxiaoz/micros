@@ -40,11 +40,11 @@ func CreateStudent(ctx *gin.Context) {
 	if err := ctx.ShouldBindJSON(&student); err != nil {
 		log.Logger().Errorf("参数错误 %s", err.Error())
 		ctx.JSON(http.StatusBadRequest, common.Error(common.BindJSONError, err))
-		return 
+		return
 	}
 	if err := service.CreateStudent(&student); err != nil {
 		ctx.JSON(http.StatusOK, common.Error(common.CommonServerError, err))
-		return 
+		return
 	}
 	ctx.JSON(http.StatusOK, student)
 }
