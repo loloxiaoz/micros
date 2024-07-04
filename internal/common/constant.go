@@ -25,8 +25,7 @@ const (
 	ErrorDeadlineExceeded   = "DEADLINE_EXCEEDED"   //超时
 )
 
-
-//ErrCodeMap 错误类型 和 错误码 对应关系
+// ErrCodeMap 错误类型 和 错误码 对应关系
 var ErrCodeMap = map[string]int{
 	ErrorInvalidArgument:    400, //客户端指定了无效参数
 	ErrorFailedPrecondition: 400, //请求无法在当前系统状态下执行，例如删除非空目录

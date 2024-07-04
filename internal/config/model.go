@@ -24,10 +24,10 @@ type DB struct {
 
 // Log 日志配置
 type Log struct {
-	Path         string `json:"path"`
-	Level        string `json:"level"`
-	MaxAge       int `json:"maxage"`
-	Rotate       int `json:"rotate"`
+	Path   string `json:"path"`
+	Level  string `json:"level"`
+	MaxAge int    `json:"maxage"`
+	Rotate int    `json:"rotate"`
 }
 
 // Opt 选项配置

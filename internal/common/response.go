@@ -4,7 +4,6 @@ import (
 	"time"
 )
 
-
 type response struct {
 	Time    time.Time   `json:"time"`
 	Code    int         `json:"code"`

@@ -14,14 +14,14 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-//Log 日志对象
+// Log 日志对象
 var Log *logrus.Logger
 
-//MyFormatter 日志格式
-type MyFormatter struct {}
+// MyFormatter 日志格式
+type MyFormatter struct{}
 
 // Format 格式化
-func (m *MyFormatter) Format(entry *logrus.Entry) ([]byte, error){
+func (m *MyFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	var b *bytes.Buffer
 	if entry.Buffer != nil {
 		b = entry.Buffer
@@ -36,7 +36,7 @@ func (m *MyFormatter) Format(entry *logrus.Entry) ([]byte, error){
 		fName := filepath.Base(entry.Caller.File)
 		newLog = fmt.Sprintf("[%s] [%s] [%s:%d %s] %s\n",
 			timestamp, entry.Level, fName, entry.Caller.Line, entry.Caller.Function, entry.Message)
-	} else{
+	} else {
 		newLog = fmt.Sprintf("[%s] [%s] %s\n", timestamp, entry.Level, entry.Message)
 	}
 
@@ -46,30 +46,30 @@ func (m *MyFormatter) Format(entry *logrus.Entry) ([]byte, error){
 
 // Init 创建日志对象
 func Init(c *config.Log) {
-		// 实例化
-		Log = logrus.New()
-		level, err := logrus.ParseLevel(c.Level) 
-		if err != nil{
-			fmt.Printf("log level is wrong: %s, err is %s\n", c.Level, err.Error())
-			os.Exit(1)
-		}
-		Log.SetLevel(level)
+	// 实例化
+	Log = logrus.New()
+	level, err := logrus.ParseLevel(c.Level)
+	if err != nil {
+		fmt.Printf("log level is wrong: %s, err is %s\n", c.Level, err.Error())
+		os.Exit(1)
+	}
+	Log.SetLevel(level)
 
-		// 设置 rotatelogs
-		logWriter, _ := rotatelogs.New(
-			c.Path +"micros.%Y%m%d.log",
-			rotatelogs.WithMaxAge(time.Duration(c.MaxAge)*24*time.Hour),
-			rotatelogs.WithRotationTime(time.Duration(c.Rotate)*time.Hour),
-		)
+	// 设置 rotatelogs
+	logWriter, _ := rotatelogs.New(
+		c.Path+"micros.%Y%m%d.log",
+		rotatelogs.WithMaxAge(time.Duration(c.MaxAge)*24*time.Hour),
+		rotatelogs.WithRotationTime(time.Duration(c.Rotate)*time.Hour),
+	)
 
-		writeMap := lfshook.WriterMap{
-			logrus.InfoLevel:  logWriter,
-			logrus.FatalLevel: logWriter,
-			logrus.DebugLevel: logWriter,
-			logrus.WarnLevel:  logWriter,
-			logrus.ErrorLevel: logWriter,
-			logrus.PanicLevel: logWriter,
-		}
-		Log.AddHook(lfshook.NewHook(writeMap, &logrus.JSONFormatter{}))
-		return
+	writeMap := lfshook.WriterMap{
+		logrus.InfoLevel:  logWriter,
+		logrus.FatalLevel: logWriter,
+		logrus.DebugLevel: logWriter,
+		logrus.WarnLevel:  logWriter,
+		logrus.ErrorLevel: logWriter,
+		logrus.PanicLevel: logWriter,
+	}
+	Log.AddHook(lfshook.NewHook(writeMap, &logrus.JSONFormatter{}))
+	return
 }
