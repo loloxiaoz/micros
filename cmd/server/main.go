@@ -15,6 +15,7 @@ import (
 	"micros/internal/db"
 	"micros/internal/log"
 	"micros/internal/server"
+	"micros/internal/service"
 )
 
 func main() {
@@ -64,4 +65,5 @@ func main() {
 func initDB(c *config.DB) {
 
 	db.Init(c)
+	service.Init()
 }
