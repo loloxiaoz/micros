@@ -39,6 +39,37 @@ const docTemplate = `{
                 }
             }
         },
+        "/student": {
+            "put": {
+                "description": "创建学生",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "example"
+                ],
+                "summary": "student example",
+                "parameters": [
+                    {
+                        "description": "姓名",
+                        "name": "student",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/service.Student"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "学生",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/system/health": {
             "get": {
                 "description": "do ping",
@@ -84,6 +115,11 @@ const docTemplate = `{
                     }
                 }
             }
+        }
+    },
+    "definitions": {
+        "service.Student": {
+            "type": "object"
         }
     }
 }`

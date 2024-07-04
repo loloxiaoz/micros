@@ -37,6 +37,7 @@ func New(conf *config.Conf) *Server {
 	server.assemble(v1)
 	v1.GET("/system/health", controller.Health)
 	v1.GET("/example/hello", controller.Helloworld)
+	v1.PUT("/student", controller.CreateStudent)
 
 	return server
 }

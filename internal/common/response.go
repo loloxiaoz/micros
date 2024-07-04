@@ -18,7 +18,6 @@ func Success(v interface{}) interface{} {
 }
 
 // Error 失败
-func Error(bizError string, err error) interface{} {
-	bizCode := ErrCodeMap[bizError]
-	return response{Stat: 0, Code: bizCode, Message: bizError, Data: err.Error()}
+func Error(bizError *BizError, err error) interface{} {
+	return response{Time: time.Now(), Stat: 0, Code: bizError.Code, Message: bizError.Message, Data: err.Error()}
 }

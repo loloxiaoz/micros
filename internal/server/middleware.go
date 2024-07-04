@@ -20,7 +20,7 @@ func logHandler() gin.HandlerFunc {
 		data, err := ctx.GetRawData()
 		if err != nil {
 			log.Logger().Error("请求参数解析失败：", err)
-			common.Error(common.ErrorInvalidArgument, err)
+			ctx.JSON(http.StatusBadRequest, common.Error(common.BindJSONError, err))
 			return
 		}
 		//Body数据只能读取一次，需要需要写回去

@@ -43,6 +43,16 @@ func main() {
 	initDB(&conf.DB)
 
 	//server
+	startServer(conf)
+}
+
+func initDB(c *config.DB) {
+
+	db.Init(c)
+	service.Init()
+}
+
+func startServer(conf *config.Conf) {
 	s := server.New(conf)
 	go func() {
 		if err := s.Run(); err != nil && err != http.ErrServerClosed {
@@ -60,10 +70,4 @@ func main() {
 		log.Logger().Fatal("server shutdown error")
 	}
 	log.Logger().Info("server exit")
-}
-
-func initDB(c *config.DB) {
-
-	db.Init(c)
-	service.Init()
 }
