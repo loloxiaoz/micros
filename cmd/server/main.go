@@ -12,7 +12,8 @@ import (
 
 	"micros/internal/common"
 	"micros/internal/config"
-	"micros/internal/logger"
+	"micros/internal/db"
+	"micros/internal/log"
 	"micros/internal/server"
 )
 
@@ -24,9 +25,6 @@ func main() {
 	yamlDir := flag.String("cy", os.Getenv("GOPATH")+"/src/micros/configs/conf.yaml", "config file path, yaml")
 	flag.Parse()
 
-	fmt.Printf("init config file path is %s\n", *initDir)
-	fmt.Printf("yaml config file path is %s\n", *yamlDir)
-
 	//config
 	conf, err := config.New(*initDir, *yamlDir)
 	if err != nil {
@@ -35,16 +33,19 @@ func main() {
 	}
 
 	//logger
-	if err := logger.Init(&conf.Log); err != nil {
+	if err := log.Init(&conf.Log); err != nil {
 		fmt.Printf("logger init fail, error is %s", err.Error())
 		os.Exit(1)
 	}
+
+	// DB
+	initDB(&conf.DB)
 
 	//server
 	s := server.New(conf)
 	go func() {
 		if err := s.Run(); err != nil && err != http.ErrServerClosed {
-			logger.Log.Errorf("server listen err:%s", err)
+			log.Logger().Errorf("server listen err:%s", err)
 		}
 	}()
 
@@ -55,7 +56,12 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := s.Shutdown(ctx); err != nil {
-		logger.Log.Fatal("server shutdown error")
+		log.Logger().Fatal("server shutdown error")
 	}
-	logger.Log.Info("server exit")
+	log.Logger().Info("server exit")
+}
+
+func initDB(c *config.DB) {
+
+	db.Init(c)
 }

@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"micros/internal/common"
-	"micros/internal/logger"
+	"micros/internal/log"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -19,7 +19,7 @@ func logHandler() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		data, err := ctx.GetRawData()
 		if err != nil {
-			logger.Log.Error("请求参数解析失败：", err)
+			log.Logger().Error("请求参数解析失败：", err)
 			common.Error(common.ErrorInvalidArgument, err)
 			return
 		}
@@ -36,7 +36,7 @@ func logHandler() gin.HandlerFunc {
 			latencyTime := endTime.Sub(startTime)
 
 			if err := recover(); err != nil {
-				logger.Log.WithFields(logrus.Fields{
+				log.Logger().WithFields(logrus.Fields{
 					"client_ip":    ctx.ClientIP(),
 					"status_code":  statusCode,
 					"latency_time": latencyTime.Milliseconds(),
@@ -49,7 +49,7 @@ func logHandler() gin.HandlerFunc {
 			}
 
 			// 日志格式
-			logger.Log.WithFields(logrus.Fields{
+			log.Logger().WithFields(logrus.Fields{
 				"client_ip":    ctx.ClientIP(),
 				"status_code":  statusCode,
 				"latency_time": latencyTime.Milliseconds(),

@@ -5,7 +5,7 @@ import (
 	"micros/api"
 	"micros/internal/config"
 	"micros/internal/controller"
-	"micros/internal/logger"
+	"micros/internal/log"
 	"net/http"
 
 	fileSwagger "github.com/swaggo/files"
@@ -60,7 +60,7 @@ func (s *Server) assemble(group *gin.RouterGroup) {
 
 // Run 运行http服务
 func (s *Server) Run() error {
-	logger.Log.Info("server starting")
+	log.Logger().Info("server starting")
 	s.server = &http.Server{
 		Addr:    s.conf.Addr,
 		Handler: s.engine,
@@ -70,6 +70,6 @@ func (s *Server) Run() error {
 
 // Shutdown 停止http服务
 func (s *Server) Shutdown(ctx context.Context) error {
-	logger.Log.Info("server shutting down")
+	log.Logger().Info("server shutting down")
 	return s.server.Shutdown(ctx)
 }
