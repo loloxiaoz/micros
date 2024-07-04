@@ -5,6 +5,7 @@ import (
 
 	"micros/internal/common"
 	"micros/internal/log"
+	"micros/internal/model"
 	"micros/internal/service"
 
 	"github.com/gin-gonic/gin"
@@ -29,13 +30,13 @@ func Helloworld(ctx *gin.Context) {
 // @Summary student example
 // @Produce json
 // @Schemes
-// @Param student body service.Student true "姓名"
+// @Param student body model.Student true "学生信息"
 // @Description 创建学生
 // @Tags example
 // @Success 200 {string} Student "学生"
 // @Router /student [put]
 func CreateStudent(ctx *gin.Context) {
-	var student service.Student
+	var student model.Student
 	if err := ctx.ShouldBindJSON(&student); err != nil {
 		log.Logger().Errorf("参数错误 %s", err.Error())
 		ctx.JSON(http.StatusBadRequest, common.Error(common.BindJSONError, err))

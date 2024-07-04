@@ -1,5 +1,5 @@
 definitions:
-  service.Student:
+  model.Student:
     type: object
 info:
   contact: {}
@@ -28,7 +28,7 @@ paths:
         name: student
         required: true
         schema:
-          $ref: '#/definitions/service.Student'
+          $ref: '#/definitions/model.Student'
       produces:
       - application/json
       responses:

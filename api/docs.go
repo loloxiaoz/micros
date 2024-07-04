@@ -56,7 +56,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/service.Student"
+                            "$ref": "#/definitions/model.Student"
                         }
                     }
                 ],
@@ -118,7 +118,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "service.Student": {
+        "model.Student": {
             "type": "object"
         }
     }

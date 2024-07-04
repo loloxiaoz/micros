@@ -44,7 +44,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/service.Student"
+                            "$ref": "#/definitions/model.Student"
                         }
                     }
                 ],
@@ -106,7 +106,7 @@
         }
     },
     "definitions": {
-        "service.Student": {
+        "model.Student": {
             "type": "object"
         }
     }
