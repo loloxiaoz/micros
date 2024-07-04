@@ -23,11 +23,17 @@ const endWithZip = ".zip"
 
 type output struct{}
 
-func newOutput() output                            { return output{} }
-func (l output) Write(p []byte) (n int, err error) { return }
+func newOutput() output { 
+	return output{} 
+}
+func (l output) Write(p []byte) (n int, err error) { 
+	return 
+}
 
+var log *Log
 var rw sync.RWMutex
 
+// Log 日志
 type Log struct {
 	log        *logrus.Logger
 	path       string //日志路径
@@ -42,45 +48,18 @@ type Log struct {
 	maxAge     int64 //有效期
 }
 
-var log *Log
-
-func New(name string, opts ...option) *Entry {
-	rw.Lock()
-	defer rw.Unlock()
-	if log == nil {
-		log = NewLog("", opts...)
-	}
-	return log.NewEntry(name)
-}
-
-func NewLog(name string, opts ...option) *Log {
-	log := &Log{
-		log:        logrus.New(),
-		watchStop:  make(chan struct{}),
-		deleteStop: make(chan struct{}),
-	}
-
-	if 0 == len(opts) {
-		opts = append(opts, WithLogLevel("debug"))
-		opts = append(opts, WithLogName("./log/system.log"))
-		opts = append(opts, WithWatchEnable(true))
-	}
-
-	log.initLocal(name, opts...)
-	return log
-}
-
-func (l *Log) NewEntry(name string) *Entry {
+func (l *Log) newEntry(name string) *Entry {
 	return &Entry{Log: l.log.WithField("model", name), caller: l.caller}
 }
 
+// Stop 停止日志
 func (l *Log) Stop() {
 	if nil != l.watchStop {
-		l.NewEntry("stop").Warnf("log stop watchStop channel")
+		l.newEntry("stop").Warnf("log stop watchStop channel")
 		l.watchStop <- struct{}{}
 	}
 	if nil != l.deleteStop {
-		l.NewEntry("stop").Warnf("log stop deleteStop channel")
+		l.newEntry("stop").Warnf("log stop deleteStop channel")
 		l.deleteStop <- struct{}{}
 	}
 }
@@ -145,7 +124,6 @@ func (l *Log) defPath(name string, level logrus.Level, opts ...option) {
 	l.formatName = findLogName(opts...)
 	name = l.logFileName()
 	l.name = filepath.Base(name)
-
 	l.path = filepath.Dir(name)
 
 	l.hook = lfshook.NewHook(name, &formatter.TextFormatter{
@@ -192,7 +170,6 @@ func (l *Log) cutLog() {
 		oldName := l.name
 		if oldName != name && name != "" {
 			l.name = name
-
 			atomic.StoreInt32(&l.index, 0)
 			l.hook.SetDefaultPath(fmt.Sprintf("%s/%s", l.path, l.name))
 			delName := fmt.Sprintf("%s/%s", l.path, oldName)
@@ -225,47 +202,16 @@ func (l *Log) handleFile(filename string) {
 		l.log.Debugf("log cutLog remove filename:%s error:%s", filename, err.Error())
 	}
 }
-
-func zipfile(filename string) error {
-	newFile, err := os.Create(filename + endWithZip)
-	if err != nil {
-		return err
-	}
-	defer newFile.Close()
-
-	zipit := zip.NewWriter(newFile)
-
-	defer zipit.Close()
-
-	zipfile, err := os.Open(filename)
-	if err != nil {
-		return err
-	}
-	defer zipfile.Close()
-
-	info, err := zipfile.Stat()
-	if err != nil {
-		return err
-	}
-
-	header, err := zip.FileInfoHeader(info)
-	if err != nil {
-		return err
-	}
-
-	header.Method = zip.Deflate
-
-	writer, err := zipit.CreateHeader(header)
-	if err != nil {
-		return err
-	}
-	_, err = io.Copy(writer, zipfile)
-	return err
+//SetLevel 设置日志级别
+func (l *Log) SetLevel(level logrus.Level) {
+	l.log.Level = level
 }
 
-/**
-定时删除日志
-*/
+//SetMaxAge 设置日志保存时间
+func (l *Log) SetMaxAge(age int64) {
+	l.maxAge = age
+}
+
 func (l *Log) deleteLog(path string) {
 	tick := time.Tick(time.Second * 30)
 	del := func() {
@@ -277,7 +223,6 @@ func (l *Log) deleteLog(path string) {
 			modeTime := k.file.ModTime().Unix()
 			nowTime := time.Now().Unix()
 			result := (modeTime+l.maxAge)-nowTime > 0 //当前文件最后修改时间+1个月(默认)>当前时间
-			//fmt.Printf("modeTime:%v maxAge:%v,nowTime:%v,modeTime+l.maxAge:%v\n", modeTime, l.maxAge, nowTime, modeTime+l.maxAge)
 			if !result {
 				removeArr = append(removeArr, k.path)
 			}
@@ -305,6 +250,64 @@ func (l *Log) deleteLog(path string) {
 
 }
 
+
+// New 创建日志
+func New(name string, opts ...option) *Entry {
+	rw.Lock()
+	defer rw.Unlock()
+	if log == nil {
+		log = newLog("", opts...)
+	}
+	return log.newEntry(name)
+}
+
+func newLog(name string, opts ...option) *Log {
+	log := &Log{
+		log:        logrus.New(),
+		watchStop:  make(chan struct{}),
+		deleteStop: make(chan struct{}),
+	}
+
+	if 0 == len(opts) {
+		opts = append(opts, WithWatchEnable(true))
+	}
+
+	log.initLocal(name, opts...)
+	return log
+}
+
+func zipfile(filename string) error {
+	newFile, err := os.Create(filename + endWithZip)
+	if err != nil {
+		return err
+	}
+	defer newFile.Close()
+	zipit := zip.NewWriter(newFile)
+	defer zipit.Close()
+	zipfile, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+	defer zipfile.Close()
+
+	info, err := zipfile.Stat()
+	if err != nil {
+		return err
+	}
+	header, err := zip.FileInfoHeader(info)
+	if err != nil {
+		return err
+	}
+	header.Method = zip.Deflate
+
+	writer, err := zipit.CreateHeader(header)
+	if err != nil {
+		return err
+	}
+	_, err = io.Copy(writer, zipfile)
+	return err
+}
+
 type fileInfo struct {
 	file os.FileInfo
 	path string
@@ -328,20 +331,4 @@ func listFile(path string, arr []fileInfo) []fileInfo {
 		}
 	}
 	return arr
-}
-
-func (l *Log) SetLevel(level logrus.Level) {
-	l.log.Level = level
-}
-
-func (l *Log) SetMaxAge(age int64) {
-	if age == OneWeek {
-		l.maxAge = age
-		return
-	}
-	if age < OneMonth {
-		age = OneMonth
-		return
-	}
-	l.maxAge = age
 }

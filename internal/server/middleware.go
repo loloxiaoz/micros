@@ -17,7 +17,7 @@ import (
 )
 
 var (
-	logFilePath = "./logs/access" 
+	logFilePath = "access" 
 	logFileName = "./logs/access.log"
 )
 

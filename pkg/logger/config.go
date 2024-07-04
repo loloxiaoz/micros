@@ -5,22 +5,16 @@ import (
 )
 
 const (
-	DEFAULT_WATCHER_FILES_BY_SIZE = 100 * 1024 * 1024
+	//DefaultFileSize 默认日志文件大小
+	DefaultFileSize = 100 * 1024 * 1024
 
+	//OneMonth 一周
 	OneMonth = 31 * 24 * 60 * 60
-	OneWeek  = 7 * 24 * 60 * 60
 
-	DEFAULT_LOG_NAME = "./log/default.log"
+	//DefaultLogName 默认日志文件名
+	DefaultLogName = "default.log"
 )
 
-const (
-	LOG_DEBUG_LEVEL = "debug"
-	LOG_INFO_LEVEL  = "info"
-	LOG_ERROR_LEVEL = "error"
-	LOG_FATAL_LEVEL = "fatal"
-	LOG_WARN_LEVEL  = "warn"
-	LOG_PANIC_LEVEL = "panic"
-)
 
 const (
 	logAge           = "maxAge"
@@ -105,20 +99,15 @@ func findMaxAge(opts ...option) int64 {
 		if nil == opt {
 			continue
 		}
-
 		if value := opt.Get(logAge); nil != value {
 			val := value.(int64)
-			if val == OneWeek {
-				val = OneWeek
-				return val
-			}
 			if val < OneMonth {
 				val = OneMonth
-				return val
 			}
 			return val
 		}
 	}
+
 	return OneMonth
 }
 
@@ -127,13 +116,12 @@ func findLogName(opts ...option) string {
 		if nil == opt {
 			continue
 		}
-
 		if value := opt.Get(logName); nil != value {
 			return value.(string)
 		}
 	}
 
-	return DEFAULT_LOG_NAME
+	return DefaultLogName
 }
 
 /**
@@ -164,7 +152,7 @@ func findWatchLogsBySize(opts ...option) int64 {
 		}
 	}
 
-	return DEFAULT_WATCHER_FILES_BY_SIZE
+	return DefaultFileSize 
 }
 
 func findCaller(opts ...option) bool {
