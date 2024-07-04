@@ -12,12 +12,12 @@
 - [x] docker-compose
 - [x] config 库
 - [x] 云原生
-- [ ] log
+- [x] log
+- [ ] 数据库 orm
+- [ ] flags
 - [ ] k8s配置文件
 - [ ] 可观测性
-- [ ] 数据库 orm
 - [ ] 注册中心
-- [ ] flags
 - [ ] gitbook文档生成
 
 ## 启动命令

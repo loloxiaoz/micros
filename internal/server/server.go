@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -35,8 +36,6 @@ func New(conf *config.Conf) *Server {
 	server.engine = gin.New()
 
 	//middleware
-	server.engine.Use(statBefore())
-	server.engine.Use(statAfter())
 	server.engine.Use(logHandler())
 
 	//assemble
@@ -70,24 +69,9 @@ func (s *Server) assemble(group *gin.RouterGroup) {
 }
 
 // Run 运行http服务
-func (s *Server) Run() {
+func (s *Server) Run(ctx context.Context) {
 	err := s.engine.Run(s.conf.Addr)
 	if err != nil {
 		fmt.Printf("err is %v", err)
-	}
-}
-
-func statBefore() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		curTime := time.Now().UnixNano() / 1000000
-		c.Set(beginTime, curTime)
-	}
-}
-
-func statAfter() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		defer func() {
-		}()
-		c.Next()
 	}
 }

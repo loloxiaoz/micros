@@ -11,7 +11,8 @@ import (
 
 func TestConfig(t *testing.T) {
 	dir := os.Getenv("GOPATH") + "/src/micros/"
-	conf := config.New(dir+"configs/conf.ini", dir+"configs/conf.yaml")
+	conf, err := config.New(dir+"configs/conf.ini", dir+"configs/conf.yaml")
+	assert.Nil(t, err)
 	assert.Equal(t, "mysql", conf.DB.DBType)
 	assert.Equal(t, "DEBUG", conf.Log.Level)
 	assert.Equal(t, "true", conf.Opt.Profile)

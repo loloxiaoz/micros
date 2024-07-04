@@ -16,7 +16,7 @@ type Conf struct {
 }
 
 // New 创建conf
-func New(path ...string) *Conf {
+func New(path ...string) (*Conf, error) {
 	// 支持ENV变量解析
 	config.WithOptions(config.ParseEnv)
 	config.WithOptions(func(opt *config.Options) {
@@ -27,14 +27,14 @@ func New(path ...string) *Conf {
 	config.AddDriver(yaml.Driver)
 	config.AddDriver(ini.Driver)
 
+	var conf Conf
 	// 加载配置，可以同时传入多个文件
 	err := config.LoadFiles(path...)
 	if err != nil {
-		panic(err)
+		return &conf, err
 	}
-	var conf Conf
 	config.Decode(&conf)
-	return &conf
+	return &conf, nil
 }
 
 // IsAPIDoc 是否开启api文档
