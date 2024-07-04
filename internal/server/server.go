@@ -2,13 +2,11 @@ package server
 
 import (
 	"context"
-	"time"
-
 	"micros/api"
 	"micros/internal/config"
 	"micros/internal/controller"
 	"micros/internal/logger"
-	"micros/pkg/registry"
+	"net/http"
 
 	fileSwagger "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -17,15 +15,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const (
-	beginTime = "beginTime"
-	endTime   = "endTime"
-)
-
 // Server 服务
 type Server struct {
 	engine *gin.Engine
 	conf   *config.Conf
+	server *http.Server
 }
 
 // New 新建http服务
@@ -44,10 +38,6 @@ func New(conf *config.Conf) *Server {
 	v1.GET("/system/health", controller.Health)
 	v1.GET("/example/hello", controller.Helloworld)
 
-	//service discovery
-	node := &registry.Node{Id: "1", Address: "127.0.0.1", Port: 8080}
-	service := &registry.Service{Name: conf.Profile, Nodes: []*registry.Node{node}}
-	registry.DefaultRegistry.Register(service, registry.RegisterTTL(time.Minute*5))
 	return server
 }
 
@@ -69,11 +59,17 @@ func (s *Server) assemble(group *gin.RouterGroup) {
 }
 
 // Run 运行http服务
-func (s *Server) Run(ctx context.Context) {
+func (s *Server) Run() error{
 	logger.Log.Info("server starting")
-	err := s.engine.Run(s.conf.Addr)
-	if err != nil {
-		logger.Log.Errorf("server start fail, err is %v!", err)
+	s.server = &http.Server{
+		Addr:    s.conf.Addr,
+		Handler: s.engine,
 	}
-	logger.Log.Warn("server stoped!")
+	return s.server.ListenAndServe()
+}
+
+// Shutdown 停止http服务
+func (s *Server) Shutdown(ctx context.Context) error{
+	logger.Log.Info("server shutting down")
+	return s.server.Shutdown(ctx)
 }

@@ -4,7 +4,11 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"micros/internal/common"
 	"micros/internal/config"
@@ -37,8 +41,21 @@ func main() {
 	}
 
 	//server
-	ctx, cancel := context.WithCancel(context.Background())
 	s := server.New(conf)
-	s.Run(ctx)
-	cancel()
+	go func() {
+		if err := s.Run(); err != nil && err != http.ErrServerClosed {
+			logger.Log.Errorf("server listen err:%s", err)
+		}
+	}()
+
+	//shutdown
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := s.Shutdown(ctx); err != nil {
+		logger.Log.Fatal("server shutdown error")
+	}
+	logger.Log.Info("server exit")
 }
