@@ -59,7 +59,7 @@ func (s *Server) assemble(group *gin.RouterGroup) {
 }
 
 // Run 运行http服务
-func (s *Server) Run() error{
+func (s *Server) Run() error {
 	logger.Log.Info("server starting")
 	s.server = &http.Server{
 		Addr:    s.conf.Addr,
@@ -69,7 +69,7 @@ func (s *Server) Run() error{
 }
 
 // Shutdown 停止http服务
-func (s *Server) Shutdown(ctx context.Context) error{
+func (s *Server) Shutdown(ctx context.Context) error {
 	logger.Log.Info("server shutting down")
 	return s.server.Shutdown(ctx)
 }

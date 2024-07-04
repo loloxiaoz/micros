@@ -20,8 +20,8 @@ func main() {
 	common.PrintVersion()
 
 	//flags
-	initDir := flag.String("ci", os.Getenv("GOPATH") + "/src/micros/configs/conf.ini", "config file path, ini")
-	yamlDir := flag.String("cy", os.Getenv("GOPATH") + "/src/micros/configs/conf.yaml", "config file path, yaml")
+	initDir := flag.String("ci", os.Getenv("GOPATH")+"/src/micros/configs/conf.ini", "config file path, ini")
+	yamlDir := flag.String("cy", os.Getenv("GOPATH")+"/src/micros/configs/conf.yaml", "config file path, yaml")
 	flag.Parse()
 
 	fmt.Printf("init config file path is %s\n", *initDir)
@@ -29,7 +29,7 @@ func main() {
 
 	//config
 	conf, err := config.New(*initDir, *yamlDir)
-	if err !=nil {
+	if err != nil {
 		fmt.Printf("config init fail, error is %s", err.Error())
 		os.Exit(1)
 	}

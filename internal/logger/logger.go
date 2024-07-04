@@ -44,7 +44,7 @@ func (m *MyFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 }
 
 // Init 创建日志对象
-func Init(c *config.Log) error{
+func Init(c *config.Log) error {
 	// 实例化
 	Log = logrus.New()
 	level, err := logrus.ParseLevel(c.Level)
