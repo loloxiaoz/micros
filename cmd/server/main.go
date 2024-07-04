@@ -3,6 +3,7 @@ package main
 import (
 	"micros/internal/common"
 	"micros/internal/config"
+	"micros/internal/logger"
 	"micros/internal/server"
 	"os"
 )
@@ -16,7 +17,11 @@ func main() {
 	//config
 	conf := config.New(initDir, yamlDir)
 
+	//logger
+	logger.Init(&conf.Log)
+
 	//server
 	s := server.New(conf)
+	logger.Log.Debug("server starting")
 	s.Run()
 }
