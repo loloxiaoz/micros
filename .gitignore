@@ -445,3 +445,4 @@ go.sum
 bin
 build
 .vscode
+logs
