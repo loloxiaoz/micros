@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"micros/internal/common"
 	"micros/internal/config"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -47,14 +48,18 @@ func (m *MyFormatter) Format(entry *logrus.Entry) ([]byte, error){
 func Init(c *config.Log) {
 		// 实例化
 		Log = logrus.New()
-		Log.SetLevel(logrus.DebugLevel)
+		level, err := logrus.ParseLevel(c.Level) 
+		if err != nil{
+			fmt.Printf("log level is wrong: %s, err is %s\n", c.Level, err.Error())
+			os.Exit(1)
+		}
+		Log.SetLevel(level)
 
 		// 设置 rotatelogs
 		logWriter, _ := rotatelogs.New(
-			c.Path +".%Y%m%d.log",
-			rotatelogs.WithLinkName(c.Path),
-			rotatelogs.WithMaxAge(30*24*time.Hour),
-			rotatelogs.WithRotationTime(24*time.Hour),
+			c.Path +"micros.%Y%m%d.log",
+			rotatelogs.WithMaxAge(time.Duration(c.MaxAge)*24*time.Hour),
+			rotatelogs.WithRotationTime(time.Duration(c.Rotate)*time.Hour),
 		)
 
 		writeMap := lfshook.WriterMap{

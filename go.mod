@@ -3,7 +3,6 @@ module micros
 go 1.22
 
 require (
-	github.com/antonfisher/nested-logrus-formatter v1.3.1
 	github.com/gin-contrib/pprof v1.5.0
 	github.com/gin-gonic/gin v1.10.0
 	github.com/gookit/config/v2 v2.2.5

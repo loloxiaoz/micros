@@ -26,6 +26,8 @@ type DB struct {
 type Log struct {
 	Path         string `json:"path"`
 	Level        string `json:"level"`
+	MaxAge       int `json:"maxage"`
+	Rotate       int `json:"rotate"`
 }
 
 // Opt 选项配置
