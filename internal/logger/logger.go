@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"micros/internal/common"
 	"micros/internal/config"
-	"os"
 	"path/filepath"
 	"time"
 
@@ -45,13 +44,12 @@ func (m *MyFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 }
 
 // Init 创建日志对象
-func Init(c *config.Log) {
+func Init(c *config.Log) error{
 	// 实例化
 	Log = logrus.New()
 	level, err := logrus.ParseLevel(c.Level)
 	if err != nil {
-		fmt.Printf("log level is wrong: %s, err is %s\n", c.Level, err.Error())
-		os.Exit(1)
+		return err
 	}
 	Log.SetLevel(level)
 
@@ -71,5 +69,5 @@ func Init(c *config.Log) {
 		logrus.PanicLevel: logWriter,
 	}
 	Log.AddHook(lfshook.NewHook(writeMap, &logrus.JSONFormatter{}))
-	return
+	return nil
 }

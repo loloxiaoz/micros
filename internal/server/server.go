@@ -2,12 +2,12 @@ package server
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"micros/api"
 	"micros/internal/config"
 	"micros/internal/controller"
+	"micros/internal/logger"
 	"micros/pkg/registry"
 
 	fileSwagger "github.com/swaggo/files"
@@ -70,8 +70,10 @@ func (s *Server) assemble(group *gin.RouterGroup) {
 
 // Run 运行http服务
 func (s *Server) Run(ctx context.Context) {
+	logger.Log.Info("server starting")
 	err := s.engine.Run(s.conf.Addr)
 	if err != nil {
-		fmt.Printf("err is %v", err)
+		logger.Log.Errorf("server start fail, err is %v!", err)
 	}
+	logger.Log.Warn("server stoped!")
 }

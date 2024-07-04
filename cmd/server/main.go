@@ -14,26 +14,31 @@ import (
 
 func main() {
 	common.PrintVersion()
-	flag.Parse()
+
 	//flags
-	initDir := os.Getenv("GOPATH") + "/src/micros/configs/conf.ini"
-	yamlDir := os.Getenv("GOPATH") + "/src/micros/configs/conf.yaml"
+	initDir := flag.String("ci", os.Getenv("GOPATH") + "/src/micros/configs/conf.ini", "config file path, ini")
+	yamlDir := flag.String("cy", os.Getenv("GOPATH") + "/src/micros/configs/conf.yaml", "config file path, yaml")
+	flag.Parse()
+
+	fmt.Printf("init config file path is %s\n", *initDir)
+	fmt.Printf("yaml config file path is %s\n", *yamlDir)
 
 	//config
-	conf, err := config.New(initDir, yamlDir)
+	conf, err := config.New(*initDir, *yamlDir)
 	if err !=nil {
 		fmt.Printf("config init fail, error is %s", err.Error())
 		os.Exit(1)
 	}
 
 	//logger
-	logger.Init(&conf.Log)
+	if err := logger.Init(&conf.Log); err != nil {
+		fmt.Printf("logger init fail, error is %s", err.Error())
+		os.Exit(1)
+	}
 
 	//server
 	ctx, cancel := context.WithCancel(context.Background())
 	s := server.New(conf)
-	logger.Log.Info("server starting")
 	s.Run(ctx)
 	cancel()
-	logger.Log.Warn("server stoped!")
 }
